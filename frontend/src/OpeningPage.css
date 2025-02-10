@@ -1,0 +1,284 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7fbfc;
+    margin: 0;
+    padding: 0;
+    color: #1e3c4a;
+}
+
+/* Opening Page Container - adjusted padding for footer visibility */
+.opening-page {
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-top: 20px; /* Reduced further for immediate footer visibility */
+}
+
+/* Floating Dashboard */
+.floating-dashboard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #8ED4E1;
+    color: white;
+    padding: 10px 20px; /* Adjusted padding to shift content inward */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+}
+
+.dashboard-logo {
+    font-size: 30px;
+    font-weight: bold;
+    margin-left: 30px; /* Move Logo to right */
+}
+
+.dashboard-btn {
+    background-color: #ffcc00;
+    color: #004b5a;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    margin-right: 60px; /* Move Button to left */
+}
+
+.dashboard-btn:hover {
+    background-color: #fdd835;
+}
+
+/* Header - adjusted top padding */
+.header {
+    padding: 20px 20px; /* reduced top padding to move content upward */
+    text-align: center;
+    color: #0d697b;
+    font-size: 40px;
+    font-weight: bold;
+}
+
+/* Main Content Styling - adjusted padding */
+.main-content {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0; /* reduced padding for visibility */
+}
+
+.content-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 90%;
+    max-width: 1200px;
+    gap: 40px;
+}
+
+.image-section img {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 15px;
+}
+
+.text-section {
+    max-width: 600px;
+    text-align: left;
+}
+
+.headline {
+    font-size: 32px;
+    color: #0d697b;
+    line-height: 1.4;
+    margin-bottom: 30px;
+}
+
+.buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.get-started-btn, .login-btn {
+    border-radius: 12px;
+    font-size: 16px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.get-started-btn {
+    background-color: #56C2D6;
+    border: none;
+    color: white;
+}
+
+.get-started-btn:hover {
+    background-color: #3aa9bd;
+}
+
+.login-btn {
+    background-color: transparent;
+    border: 2px solid #56C2D6;
+    color: #56C2D6;
+}
+
+.login-btn:hover {
+    background-color: #eaf3f7;
+}
+
+/* Footer with Navigation Buttons */
+.footer {
+    background-color: #e3eff4;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px; /* minimal margin to enhance immediate visibility */
+}
+
+.redirect-btn {
+    padding: 10px 20px;
+    background: #ffffff;
+    border: 2px solid #0d697b;
+    color: #0d697b;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.redirect-btn:hover {
+    background-color: #eaf3f7;
+}
+
+/* Additional Sections Styling */
+.additional-sections {
+    padding: 50px 0;
+}
+
+.features-section, .science-section, .motivation-section {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 28px;
+    color: #0d697b;
+    margin-bottom: 20px;
+}
+
+.features-content, .science-content, .motivation-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.section-image {
+    max-width: 300px;
+    border-radius: 15px;
+}
+
+.features-content p, .science-content p, .motivation-content p {
+    max-width: 500px;
+    font-size: 18px;
+    color: #1e3c4a;
+    line-height: 1.5;
+}
+
+/* Footer Columns Styling */
+.footer-columns {
+    background-color: #eaf3f7;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.column {
+    min-width: 200px;
+}
+
+.column h3 {
+    font-size: 20px;
+    color: #0d697b;
+    margin-bottom: 15px;
+}
+
+.column ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.column ul li {
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.column ul li:hover {
+    color: #004b5a;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .text-section {
+        text-align: center;
+    }
+
+    .buttons {
+        justify-content: center;
+    }
+
+    .features-content, .science-content, .motivation-content {
+        flex-direction: column;
+    }
+
+    .footer-columns {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .column {
+        text-align: center;
+    }
+  
+    .floating-dashboard {
+        flex-direction: column;
+        padding: 10px 20px;
+        gap: 8px;
+    }
+
+    .dashboard-logo {
+        margin-left: 0;
+        font-size: 20px;
+    }
+
+    .dashboard-btn {
+        margin-right: 10;
+        width: 100%;
+    }
+
+    .opening-page {
+        padding-top: 100px;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+}
