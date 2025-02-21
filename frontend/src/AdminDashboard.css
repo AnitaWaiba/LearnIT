@@ -1,0 +1,98 @@
+/* Admin Dashboard Layout */
+.admin-dashboard {
+    display: flex;
+    background-color: #e3eff4; /* Light pastel blue background */
+  }
+  
+  /* Main Content */
+  .main-content {
+    margin-left: 250px; /* Offset for left sidebar */
+    padding: 20px;
+    flex-grow: 1;
+  }
+  
+  /* Admin Cards Section */
+  .admin-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  /* Admin Card Style */
+  .admin-card {
+    background-color: #3AA9BD; /* Teal */
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 200px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .admin-card:hover {
+    background-color: #56C2D6; /* Lighter Teal on Hover */
+    transform: scale(1.05);
+  }
+  
+  /* Activity Logs & Reviews Containers */
+  .activity-logs,
+  .reviews {
+    margin-top: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #b3c5cc;
+  }
+  
+  /* Logs Table Layout */
+  .log-header,
+  .log-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #b3c5cc;
+    font-weight: bold;
+  }
+  
+  .log-row {
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-top: 5px;
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  /* Review Items */
+  .review-item {
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #b3c5cc;
+  }
+  
+  /* Headings */
+  h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #004d61; /* Deep teal */
+    margin-bottom: 15px;
+  }
+  
+  h4 {
+    margin: 0;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .main-content {
+      margin-left: 0;
+    }
+  
+    .admin-cards {
+      justify-content: center;
+    }
+  }  
