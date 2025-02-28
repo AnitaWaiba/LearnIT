@@ -38,17 +38,17 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    # # ✅ UPDATE (with password hashing)
-    # def update(self, instance, validated_data):
-    #     password = validated_data.pop('password', None)
+    # ✅ UPDATE (with password hashing)
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
 
-    #     # Update all the remaining fields
-    #     for attr, value in validated_data.items():
-    #         setattr(instance, attr, value)
+        # Update all the remaining fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
 
-    #     # If password provided, hash it
-    #     if password:
-    #         instance.password = make_password(password)
+        # If password provided, hash it
+        if password:
+            instance.password = make_password(password)
 
-    #     instance.save()
-    #     return instance
+        instance.save()
+        return instance

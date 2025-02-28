@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Lesson, Enrollment, Review
 from .serializers import UserSerializer  # ✅ Make sure this is implemented!
 
+
 # =====================================================
 # ✅ Signup
 # =====================================================
@@ -121,73 +122,72 @@ def admin_dashboard(request):
 # =====================================================
 
 # 🔹 GET all users
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsAdminUser])
-# def list_users(request):
-#     users = User.objects.all()
-#     serializer = UserSerializer(users, many=True)
-#     return Response(serializer.data, status=status.HTTP_200_OK)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def list_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# # 🔹 CREATE a new user
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsAdminUser])
-# def create_user(request):
-#     serializer = UserSerializer(data=request.data)
+# 🔹 CREATE a new user
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def create_user(request):
+    serializer = UserSerializer(data=request.data)
 
-#     if serializer.is_valid():
-#         try:
-#             user = User.objects.create_user(
-#                 username=serializer.validated_data['username'],
-#                 email=serializer.validated_data['email'],
-#                 password=serializer.validated_data['password']
-#             )
-#             user.is_staff = serializer.validated_data.get('is_staff', False)
-#             user.save()
-#             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-#         except Exception as e:
-#             return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if serializer.is_valid():
+        try:
+            user = User.objects.create_user(
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+            user.is_staff = serializer.validated_data.get('is_staff', False)
+            user.save()
+            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# # 🔹 UPDATE an existing user
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated, IsAdminUser])
-# def update_user(request, user_id):
-#     try:
-#         user = User.objects.get(pk=user_id)
-#     except User.DoesNotExist:
-#         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-#     serializer = UserSerializer(data=request.data)
-#     if serializer.is_valid():
-#         user.username = serializer.validated_data.get('username', user.username)
-#         user.email = serializer.validated_data.get('email', user.email)
-#         user.is_staff = serializer.validated_data.get('is_staff', user.is_staff)
-
-#         if 'password' in serializer.validated_data and serializer.validated_data['password']:
-#             user.set_password(serializer.validated_data['password'])
-
-#         try:
-#             user.save()
-#             return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# # 🔹 DELETE a user
-# @api_view(['DELETE'])
-# @permission_classes([IsAuthenticated, IsAdminUser])
-# def delete_user(request, user_id):
-#     try:
-#         user = User.objects.get(pk=user_id)
-#         user.delete()
-#         return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
-#     except User.DoesNotExist:
-#         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-#     except Exception as e:
-#         return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# 🔹 UPDATE an existing user
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def update_user(request, user_id):
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user.username = serializer.validated_data.get('username', user.username)
+        user.email = serializer.validated_data.get('email', user.email)
+        user.is_staff = serializer.validated_data.get('is_staff', user.is_staff)
+
+        if 'password' in serializer.validated_data and serializer.validated_data['password']:
+            user.set_password(serializer.validated_data['password'])
+
+        try:
+            user.save()
+            return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 🔹 DELETE a user
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(pk=user_id)
+        user.delete()
+        return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
