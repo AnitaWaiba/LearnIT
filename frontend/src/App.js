@@ -7,6 +7,7 @@ import Signup from './Signup';
 import Login from './Login';
 import Option from './Option';
 import Home from './Home';
+import ContactUs from './ContactUs';
 
 // Admin Panel
 import AdminDashboard from './AdminDashboard';
@@ -33,6 +34,7 @@ function App() {
         <Route path="/frontend" element={<div>Front-end Development Page</div>} />
         <Route path="/backend" element={<div>Back-end Development Page</div>} />
         <Route path="/dailyquests" element={<DailyQuests />} />
+        <Route path="/contact" element={<ContactUs />} />
 
         {/* Admin Dashboard & User Management */}
         <Route path="/admin" element={<AdminDashboard />} />
