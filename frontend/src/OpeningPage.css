@@ -11,7 +11,7 @@ body {
 .opening-page {
     max-width: 100%;
     overflow-x: hidden;
-    padding-top: 20px; /* Reduced further for immediate footer visibility */
+    padding-top: 10px;
 }
 
 /* Floating Dashboard */
