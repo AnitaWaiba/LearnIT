@@ -1,0 +1,185 @@
+/* Page Layout */
+.admin-dashboard {
+    display: flex;
+  }
+  
+  .manage-users-wrapper {
+    flex: 1;
+    padding: 40px;
+    background-color: #e3eff4;
+    min-height: 100vh;
+  }
+  
+  .manage-users-title {
+    font-size: 2rem;
+    color: #004d61;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Header search bar and Add user */
+  .manage-users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    width: 400px;
+    background-color: #fff;
+    border: 1px solid #aac8d0;
+    border-radius: 6px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-icon {
+    color: #aac8d0;
+    margin-right: 10px;
+  }
+  
+  .search-bar input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+    color: #004d61;
+  }
+  
+  /* Add User button */
+  .add-user-btn {
+    background-color: #56c2d6;
+    color: #ffffff;
+    padding: 10px 18px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .add-user-btn:hover {
+    background-color: #56c2d6;
+  }
+  
+  /* User Table */
+  .user-table-container {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+  }
+  
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+  
+  .user-table th,
+  .user-table td {
+    padding: 20px 24px;
+    text-align: left;
+    font-size: 16px;
+  }
+  
+  .user-table th {
+    background-color: #56c2d6;
+    color: #ffffff;
+    font-weight: bold;
+  }
+  
+  .user-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .user-table tbody tr:hover {
+    background-color: #f1f9fb;
+  }
+  
+  .no-users-text {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #555;
+  }
+  
+  /* Action Buttons */
+  .actions-cell {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .edit-btn {
+    background-color: #297386;
+    color: #ffffff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .edit-btn:hover {
+    background-color: #004d61;
+  }
+  
+  .delete-btn {
+    background-color: #f44336;
+    color: #ffffff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .delete-btn:hover {
+    background-color: #d32f2f;
+  }
+  
+  .btn-icon {
+    font-size: 14px;
+  }
+  
+  /* Messages */
+  .message {
+    color: #004d61;
+    background-color: #e0f7fa;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .manage-users-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .search-bar {
+      width: 100%;
+    }
+  
+    .actions-cell {
+      flex-direction: column;
+    }
+  
+    .add-user-btn {
+      width: 100%;
+    }
+  }
+  

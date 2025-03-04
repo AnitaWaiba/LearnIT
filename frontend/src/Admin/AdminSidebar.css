@@ -1,0 +1,62 @@
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: #e3eff4; /* Light pastel blue */
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #004d61; /* Dark teal */
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    padding: 10px;
+    text-align: center;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #004d61; /* Dark teal */
+    display: block;
+    font-weight: bold;
+    transition: background 0.3s, color 0.3s;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.sidebar ul li a:hover {
+    background: #3AA9BD; /* Teal hover */
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        box-shadow: none;
+    }
+
+    .sidebar ul {
+        display: flex;
+        justify-content: center;
+    }
+
+    .sidebar ul li {
+        padding: 5px;
+    }
+}
