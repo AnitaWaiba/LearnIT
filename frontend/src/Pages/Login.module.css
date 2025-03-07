@@ -1,0 +1,133 @@
+.loginPage {
+  height: 100vh;
+  background: url('../Image/bg.png') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loginContainer {
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  color: #000000;
+  text-align: left;
+}
+
+.loginTitle {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0 20px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+input::placeholder {
+  color: #eee;
+}
+
+label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: block;
+  color: #fff;
+  font-weight: bold;
+}
+
+.passwordInputContainer {
+  position: relative;
+}
+
+.passwordToggleIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+.forgotPassword {
+  text-align: left;
+  font-size: 0.9rem;
+  margin: -10px 0 20px 0;
+}
+
+.forgotPassword a {
+  color: #0274d7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgotPassword a:hover {
+  text-decoration: underline;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  background-color: #1f1f1f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #333;
+}
+
+.signupLink {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.signupLink span {
+  color: #0274d7;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signupLink span:hover {
+  text-decoration: underline;
+}
+
+/* Loader Spinner */
+.loader {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
