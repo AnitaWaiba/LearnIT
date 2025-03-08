@@ -1,0 +1,374 @@
+.page {
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+}
+
+.floatingDashboard {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #8ED4E1;
+  width: 100%;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dashboardLogo {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.dashboardBtn {
+  background-color: #ffcc00;
+  color: #004b5a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.header {
+  padding: 100px 20px 40px;
+  text-align: center;
+  color: #00748c;
+  font-size: 36px;
+}
+
+.header h1 {
+  font-size: 48px;         /* Bigger for emphasis */
+  font-weight: 700;        /* Bold weight */
+  color: #00748c;          /* Matches your theme */
+  letter-spacing: 1px;     /* Slight spacing for clarity */
+  margin-bottom: 0;        /* Tighten space */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* Soft shadow for depth */
+  transition: transform 0.3s ease;
+}
+
+.header h1:hover {
+  transform: scale(1.05); /* Subtle zoom on hover */
+}
+
+
+.mainContent {
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.contentContainer {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: 40px;
+  max-width: 1100px;
+  align-items: center;
+}
+
+.imageSection img {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.textSection {
+  flex: 1;
+  min-width: 280px;
+}
+
+.headline {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.getStartedBtn,
+.loginBtn {
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.getStartedBtn {
+  background: #56C2D6;
+  color: white;
+  border: none;
+}
+
+.loginBtn {
+  background: transparent;
+  color: #56C2D6;
+  border: 2px solid #56C2D6;
+}
+
+.features,
+.steps,
+.courses {
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.features h2,
+.steps h2,
+.courses h2 {
+  font-size: 30px;
+  font-weight: 700;
+  color: #00748c;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.featureCards,
+.courseCards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.card,
+.course {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.card.visible,
+.course.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  width: 280px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin-top: 16px;
+  font-size: 22px;
+  color: #1e3a46;
+}
+
+.card p {
+  font-size: 14px;
+  color: #555;
+  margin-top: 8px;
+  text-align: center;
+  max-width: 220px;
+}
+
+.course {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  width: 320px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: popIn 0.8s ease-out;
+}
+
+.course:hover {
+  transform: translateY(-5px);
+}
+
+.course img {
+  width: 100%;
+  max-width: 240px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.course h3 {
+  font-size: 20px;
+  color: #1e3a46;
+  margin-bottom: 8px;
+}
+
+.course p {
+  font-size: 16px;
+  margin-top: auto;
+}
+
+.stepList {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 40px auto 0;
+  gap: 30px;
+  position: relative;
+}
+
+.step {
+  flex: 1;
+  min-width: 140px;
+  max-width: 160px;
+  background-color: #fff;
+  padding: 20px 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  z-index: 1;
+  position: relative;
+  animation: fadeInUp 0.8s ease both;
+}
+
+.step span {
+  background: #56C2D6;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 12px 18px;
+  display: inline-block;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.stepList::before {
+  content: '';
+  position: absolute;
+  top: 48px;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: #56C2D6;
+  z-index: 0;
+}
+
+.footer {
+  background: #eaf4f8;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.footerLinks a {
+  color: #007b8a;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  text-decoration: underline;
+}
+
+.socials a {
+  font-size: 24px;
+  margin: 0 10px;
+}
+
+.copy {
+  font-size: 14px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .contentContainer,
+  .featureCards,
+  .stepList,
+  .courseCards,
+  .footerLinks {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .imageSection img {
+    max-width: 600px;
+  }
+
+  .headline {
+    text-align: center;
+  }
+
+  .buttons {
+    justify-content: center;
+  }
+
+  .heroImage {
+    max-width: 80%;
+    margin-top: 20px;
+  }
+
+  .ctaButtons button {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .dashboardLogo {
+    font-size: 20px;
+  }
+
+  .dashboardBtn {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .stepList::before {
+    display: none;
+  }
+}
