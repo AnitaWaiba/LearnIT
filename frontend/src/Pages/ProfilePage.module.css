@@ -1,0 +1,206 @@
+.gridLayout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  grid-template-areas: "sidebar main";
+  min-height: 100vh;
+  background-color: #f9fafb;
+  color: #1f2937;
+  overflow-x: hidden;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background-color: #e3eff4;
+  color: #1f2937;
+  padding: 0;
+  max-width: 250px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-right: 1px solid #e5e7eb;
+}
+
+.mainContent {
+  grid-area: main;
+  padding: 40px 150px 40px 100px;
+  background-color: #e3eff4;
+  color: #1f2937;
+  overflow-x: hidden;
+}
+
+/* Profile Section */
+.banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+}
+
+.editBtn {
+  position: absolute;
+  bottom: 6px;
+  left: 100px;
+  background: none;
+  border: 1.5px solid #3b82f6;
+  color: #3b82f6;
+  padding: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background-color: #e0f2fe;
+}
+
+.avatarUpload {
+  margin-bottom: 20px;
+}
+
+.uploadLabel {
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.spinner {
+  margin-top: 10px;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.profileInfo {
+  margin-bottom: 30px;
+}
+
+.profileInfo h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.username {
+  color: #6b7280;
+}
+
+.joined {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.courseIcons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.courseIcon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 6px;
+  background-color: #f9fafb;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Statistics */
+.statistics {
+  margin-top: 40px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.statBox {
+  background-color: #d3e4eb;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  transition: transform 0.2s ease;
+}
+
+.statBox:hover {
+  transform: translateY(-3px);
+}
+
+.statBox strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-top: 8px;
+}
+
+/* UX Tip (optional use) */
+.uxTip {
+  background-color: #fff7ed;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gridLayout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "sidebar"
+      "main";
+  }
+
+  .sidebar {
+    max-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .mainContent {
+    padding: 20px 15px;
+  }
+
+  .banner {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .courseIcons {
+    justify-content: center;
+  }
+
+  .editBtn {
+    bottom: 4px;
+    left: 80px;
+  }
+}
