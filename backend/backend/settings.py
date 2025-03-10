@@ -1,34 +1,35 @@
 from pathlib import Path
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# ==============================================================================
+# 🔐 Base Project Setup
+# ==============================================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-m&7454wb6*tg3c3-ff7zn1!e=1ky$@nfz4gje^^b25neo-4&x#'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # ==============================================================================
-# Application definition
+# 🔧 Installed Apps
 # ==============================================================================
 
 INSTALLED_APPS = [
-    # Django default apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # Required by django-allauth
+    'django.contrib.sites',  # Required by allauth
 
-    # Third-party apps
+    # Third-party
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 
     'dj_rest_auth',
     'dj_rest_auth.registration',
@@ -37,28 +38,31 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
 
-    # Optional: Social providers
-    # 'allauth.socialaccount.providers.google',
-
-    'corsheaders',
-
-    # Your custom apps
+    # Custom app
     'myapp',
 ]
 
-SITE_ID = 1  # Required by django.contrib.sites
+SITE_ID = 1
+
+# ==============================================================================
+# 🔧 Middleware
+# ==============================================================================
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORS support
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # ✅ Required for django-allauth
+    'allauth.account.middleware.AccountMiddleware',  # required for allauth
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# ==============================================================================
+# 🔧 Templates
+# ==============================================================================
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -70,7 +74,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # ✅ Required for allauth
+                'django.template.context_processors.request',  # Required for allauth
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -81,7 +85,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # ==============================================================================
-# Database
+# 📦 Database
 # ==============================================================================
 
 DATABASES = {
@@ -92,7 +96,7 @@ DATABASES = {
 }
 
 # ==============================================================================
-# Password validation
+# 🔐 Password Validators
 # ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,7 +111,7 @@ PASSWORD_HASHERS = [
 ]
 
 # ==============================================================================
-# Internationalization
+# 🌐 Internationalization
 # ==============================================================================
 
 LANGUAGE_CODE = 'en-us'
@@ -116,19 +120,19 @@ USE_I18N = True
 USE_TZ = True
 
 # ==============================================================================
-# Static files
+# 🧱 Static Files
 # ==============================================================================
 
 STATIC_URL = 'static/'
 
 # ==============================================================================
-# Default primary key field type
+# 🔑 Primary Key Field Type
 # ==============================================================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==============================================================================
-# CORS settings (React frontend)
+# 🌍 CORS Configuration (Frontend support)
 # ==============================================================================
 
 CORS_ALLOWED_ORIGINS = [
@@ -137,21 +141,20 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # ==============================================================================
-# Django REST Framework
+# 🛡 Django REST Framework + JWT
 # ==============================================================================
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',  # ✅ Open by default
     ),
 }
 
 # ==============================================================================
-# Simple JWT (Optional if using JWT)
+# 🔐 JWT Configuration
 # ==============================================================================
 
 SIMPLE_JWT = {
@@ -159,34 +162,27 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# ==============================================================================
-# dj-rest-auth
-# ==============================================================================
-
-REST_USE_JWT = True  # ✅ You can toggle this as per your requirement
+REST_USE_JWT = True  # Enable JWT support for dj-rest-auth
 
 # ==============================================================================
-# django-allauth settings
+# 📧 Allauth Configuration
 # ==============================================================================
 
-ACCOUNT_LOGIN_METHODS = {'email'}  # ✅ Only allow login by email
-
-# ✅ Only email + passwords for signup, and email is required (denoted by *)
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
-
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # ✅ Require email verification
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True  # ✅ Auto-verify on link click
-
+ACCOUNT_AUTHENTICATION_METHOD = 'username'  # use 'username_email' for both
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Set to 'mandatory' if using email confirmation
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 
 # ==============================================================================
-# Email backend (for development)
+# 🧪 Email Backend (for dev only)
 # ==============================================================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # ==============================================================================
-# Sites framework
+# 🖼 MEDIA FILES (User Avatars, Lesson Icons, etc.)
 # ==============================================================================
 
-SITE_ID = 1
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
