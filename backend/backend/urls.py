@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from django.conf import settings
+from django.conf.urls.static import static
 
-# Import your custom view functions or class-based views from your app
 from myapp.views import (
     SignupView,
     CustomLoginView,
+    ProfileView,
     admin_dashboard,
     list_users,
     create_user,
@@ -13,47 +15,41 @@ from myapp.views import (
     delete_user
 )
 
-# Import JWT token views from DRF SimpleJWT
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView
 )
 
 urlpatterns = [
-    # Django admin panel
+    # 🔧 Admin Panel
     path('admin/', admin.site.urls),
 
-    # Root welcome endpoint (optional, for test purposes)
-    path('', lambda request: HttpResponse("✅ Welcome to the Django API!")),
+    # ✅ Root Test Endpoint
+    path('', lambda request: HttpResponse("✅ Django API is running")),
 
-    # =====================================================
-    # 🔐 AUTHENTICATION ENDPOINTS
-    # =====================================================
-
-    # Custom authentication
+    # 🔐 Authentication (Custom)
     path('api/signup/', SignupView.as_view(), name='signup'),
     path('api/login/', CustomLoginView.as_view(), name='login'),
 
-    # dj-rest-auth endpoints (login/logout/password reset/etc.)
-    path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    # 👤 User Profile (Authenticated GET/PUT)
+    path('api/profile/', ProfileView.as_view(), name='user_profile'),
 
-    # dj-rest-auth registration endpoints (email verification flows if enabled)
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-
-    # JWT token authentication endpoints (optional if using dj-rest-auth JWT)
+    # 🔑 JWT Token Endpoints (Optional if using SimpleJWT directly)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # =====================================================
-    # 🛠️ ADMIN DASHBOARD & USER MANAGEMENT ENDPOINTS
-    # =====================================================
-
-    # Admin dashboard (stats/analytics)
+    # 🛠️ Admin Dashboard & User Management
     path('api/admin/dashboard/', admin_dashboard, name='admin_dashboard'),
+    path('api/admin/users/', list_users, name='list_users'),
+    path('api/admin/users/create/', create_user, name='create_user'),
+    path('api/admin/users/<int:user_id>/update/', update_user, name='update_user'),
+    path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
 
-    # CRUD operations for user management in the admin panel
-    path('api/admin/users/', list_users, name='list_users'),                        # GET list of users
-    path('api/admin/users/create/', create_user, name='create_user'),               # POST create new user
-    path('api/admin/users/<int:user_id>/update/', update_user, name='update_user'), # PUT/PATCH update user
-    path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'), # DELETE user
+    # ✅ Optional: dj-rest-auth login/logout/password reset/registration
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
+
+# ✅ Serve media files during development (for avatar uploads, lesson icons, etc.)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
