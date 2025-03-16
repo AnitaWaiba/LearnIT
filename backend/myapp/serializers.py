@@ -2,24 +2,27 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
+from .models import UserProfile
+
+
+# ==========================================
+# 🔐 Basic User Serializer for Admin/User Ops
+# ==========================================
 
 class UserSerializer(serializers.ModelSerializer):
-    # ✅ Username with UniqueValidator
     username = serializers.CharField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all(), message="Username already exists.")]
     )
 
-    # ✅ Email with UniqueValidator (optional but recommended)
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all(), message="Email already exists.")]
     )
 
-    # ✅ Password (write_only)
     password = serializers.CharField(
         write_only=True,
-        required=False,  # Optional for updates
+        required=False,
         style={'input_type': 'password'}
     )
 
@@ -27,7 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'is_staff', 'password']
 
-    # ✅ CREATE (with password hashing)
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = User(**validated_data)
@@ -38,17 +40,42 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    # ✅ UPDATE (with password hashing)
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
 
-        # Update all the remaining fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        # If password provided, hash it
         if password:
             instance.password = make_password(password)
 
         instance.save()
+        return instance
+
+# ==========================================
+#  ProfileSerializer
+# ==========================================
+class ProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(source='userprofile.avatar', required=False)
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'date_joined', 'avatar']
+
+    def update(self, instance, validated_data):
+        user_profile_data = validated_data.pop('userprofile', {})
+
+        # Update basic user fields if needed
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update the avatar (UserProfile model)
+        profile, created = UserProfile.objects.get_or_create(user=instance)
+        avatar = user_profile_data.get('avatar')
+
+        if avatar:
+            profile.avatar = avatar
+            profile.save()
+
         return instance
