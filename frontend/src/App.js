@@ -1,22 +1,24 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Pages
-import OpeningPage from './OpeningPage';
-import Signup from './Signup';
-import Login from './Login';
-import Option from './Option';
-import Home from './Home';
-import ContactUs from './ContactUs';
+import OpeningPage from './Pages/OpeningPage';
+import Signup from './Pages/Signup';
+import Login from './Pages/Login';
+import Option from './Pages/Option';
+import Home from './Pages/Introduction/Home';
+import ContactUs from './Pages/ContactUs';
 
 // Admin Panel
-import AdminDashboard from './AdminDashboard';
-import ManageUsers from './ManageUsers';
+import AdminDashboard from './Admin/AdminDashboard';
+import ManageUsers from './Admin/ManageUsers';
 
 // Optional components (not pages)
-import Dashboard from './Dashboard';
-import DailyQuests from './DailyQuests';
-import StatusBar from './StatusBar';
+import Dashboard from './Components/Dashboard';
+import DailyQuests from './Pages/DailyQuests';
+import StatusBar from './Components/StatusBar';
+import ProfilePage from './Pages/ProfilePage';
 
 function App() {
   return (
@@ -35,6 +37,7 @@ function App() {
         <Route path="/backend" element={<div>Back-end Development Page</div>} />
         <Route path="/dailyquests" element={<DailyQuests />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* Admin Dashboard & User Management */}
         <Route path="/admin" element={<AdminDashboard />} />
