@@ -27,11 +27,15 @@
   background-color: #ffcc00;
   color: #004b5a;
   border: none;
-  padding: 8px 16px;
+  padding: 6px 12px;          /* Smaller padding */
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  white-space: nowrap;        /* Prevent text wrapping */
+  width: fit-content;         /* Shrink to fit the text */
+  min-width: auto;
 }
+
 
 .header {
   padding: 100px 20px 40px;
