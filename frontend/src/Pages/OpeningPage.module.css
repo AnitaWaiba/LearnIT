@@ -3,6 +3,7 @@
   overflow-x: hidden;
 }
 
+/* ========== Floating Dashboard ========== */
 .floatingDashboard {
   position: fixed;
   top: 0;
@@ -18,47 +19,37 @@
 }
 
 .dashboardLogo {
-  color: white;
   font-size: 24px;
   font-weight: bold;
+  color: white;
 }
 
 .dashboardBtn {
   background-color: #ffcc00;
   color: #004b5a;
   border: none;
-  padding: 6px 12px;          /* Smaller padding */
+  padding: 6px 12px;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: bold;
-  white-space: nowrap;        /* Prevent text wrapping */
-  width: fit-content;         /* Shrink to fit the text */
-  min-width: auto;
+  white-space: nowrap;
+  width: fit-content;
+  cursor: pointer;
 }
 
-
+/* ========== Header ========== */
 .header {
-  padding: 100px 20px 40px;
   text-align: center;
-  color: #00748c;
-  font-size: 36px;
+  padding: 80px 20px 40px;
 }
 
-.header h1 {
-  font-size: 48px;         /* Bigger for emphasis */
-  font-weight: 700;        /* Bold weight */
-  color: #00748c;          /* Matches your theme */
-  letter-spacing: 1px;     /* Slight spacing for clarity */
-  margin-bottom: 0;        /* Tighten space */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* Soft shadow for depth */
-  transition: transform 0.3s ease;
+.heroTitle {
+  font-size: 40px;
+  font-weight: 600;
+  color: #004b5a;
+  text-shadow: 1px 1px 2px #ccc;
 }
 
-.header h1:hover {
-  transform: scale(1.05); /* Subtle zoom on hover */
-}
-
-
+/* ========== Hero Section ========== */
 .mainContent {
   padding: 40px 20px;
   display: flex;
@@ -69,47 +60,50 @@
   display: flex;
   flex-wrap: wrap-reverse;
   gap: 40px;
-  max-width: 1100px;
+  max-width: 1200px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.imageSection {
+  flex: 1;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
 .imageSection img {
   width: 100%;
-  max-width: 600px;
-  height: auto;
+  max-width: 650px;
   object-fit: contain;
-  display: block;
-  margin: 0 auto;
+  border-radius: 12px;
 }
 
 .textSection {
   flex: 1;
-  min-width: 280px;
+  max-width: 600px;
 }
 
 .headline {
-  font-size: 28px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #004b5a;
   margin-bottom: 20px;
 }
 
 .buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-}
-
-.getStartedBtn,
-.loginBtn {
-  padding: 12px 20px;
-  font-weight: bold;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+  gap: 20px;
 }
 
 .getStartedBtn {
-  background: #56C2D6;
+  background-color: #56C2D6;
   color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
   border: none;
 }
 
@@ -117,162 +111,103 @@
   background: transparent;
   color: #56C2D6;
   border: 2px solid #56C2D6;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
+/* ========== Shared Sections ========== */
 .features,
 .steps,
 .courses {
-  padding: 80px 20px;
+  padding: 60px 20px;
   text-align: center;
 }
 
 .features h2,
 .steps h2,
 .courses h2 {
-  font-size: 30px;
-  font-weight: 700;
-  color: #00748c;
-  margin-bottom: 32px;
-  text-align: center;
+  font-size: 28px;
+  color: #004b5a;
+  margin-bottom: 30px;
 }
 
-.featureCards,
-.courseCards {
+/* ========== Feature Cards ========== */
+.featureCards {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 40px;
-  margin-top: 40px;
-  margin-bottom: 20px;
+  gap: 30px;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes popIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.card,
-.course {
+.card {
+  background: white;
+  padding: 24px;
+  width: 260px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.card.visible,
-.course.visible {
+/* Scroll-triggered visible state */
+.card.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  text-align: center;
-  width: 280px;
-  min-height: 260px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Staggered delay using nth-child */
+.card:nth-child(1).visible {
+  transition-delay: 0.1s;
+}
+.card:nth-child(2).visible {
+  transition-delay: 0.3s;
+}
+.card:nth-child(3).visible {
+  transition-delay: 0.5s;
+}
+.card:nth-child(4).visible {
+  transition-delay: 0.7s;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-}
 
 .card h3 {
-  margin-top: 16px;
-  font-size: 22px;
-  color: #1e3a46;
+  font-size: 18px;
+  margin-top: 12px;
+  color: #1e293b;
 }
 
 .card p {
   font-size: 14px;
-  color: #555;
+  color: #475569;
   margin-top: 8px;
-  text-align: center;
-  max-width: 220px;
 }
 
-.course {
-  background: #fff;
-  border-radius: 16px;
-  padding: 30px 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  text-align: center;
-  width: 320px;
-  min-height: 380px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: popIn 0.8s ease-out;
-}
-
-.course:hover {
-  transform: translateY(-5px);
-}
-
-.course img {
-  width: 100%;
-  max-width: 240px;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.course h3 {
-  font-size: 20px;
-  color: #1e3a46;
-  margin-bottom: 8px;
-}
-
-.course p {
-  font-size: 16px;
-  margin-top: auto;
-}
-
+/* ========== Steps Section ========== */
 .stepList {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   max-width: 1100px;
-  margin: 40px auto 0;
+  margin: 60px auto 0;
   gap: 30px;
   position: relative;
+  padding: 0 20px;
 }
 
 .step {
   flex: 1;
   min-width: 140px;
   max-width: 160px;
-  background-color: #fff;
+  background: #fff;
   padding: 20px 10px;
   border-radius: 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  text-align: center;
   z-index: 1;
-  position: relative;
-  animation: fadeInUp 0.8s ease both;
+  text-align: center;
 }
 
 .step span {
@@ -281,24 +216,114 @@
   font-weight: bold;
   border-radius: 50%;
   padding: 12px 18px;
-  display: inline-block;
   font-size: 18px;
+  display: inline-block;
   margin-bottom: 10px;
 }
 
-.stepList::before {
-  content: '';
+/* Line + Pulse */
+.animatedLine {
   position: absolute;
   top: 48px;
   left: 5%;
   right: 5%;
   height: 3px;
   background: #56C2D6;
+  border-radius: 4px;
+  animation: growLine 1.5s ease forwards;
   z-index: 0;
 }
 
+.pulseDot {
+  position: absolute;
+  top: 42px;
+  width: 10px;
+  height: 10px;
+  background-color: #56C2D6;
+  border-radius: 50%;
+  animation: pulseFlow 2s infinite ease-in-out;
+  z-index: 2;
+}
+
+@keyframes growLine {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 90%;
+    opacity: 1;
+  }
+}
+
+@keyframes pulseFlow {
+  0% {
+    left: 5%;
+    opacity: 0.5;
+  }
+  50% {
+    left: 47%;
+    opacity: 1;
+  }
+  100% {
+    left: 90%;
+    opacity: 0.5;
+  }
+}
+
+/* ========== Course Cards ========== */
+.courseCards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.course {
+  background: white;
+  padding: 24px;
+  width: 280px;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.course.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.course img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.course h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.courseRating {
+  font-size: 16px;
+  color: #f59e0b;
+}
+
+.courseDesc {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 8px;
+}
+
+/* ========== Footer ========== */
 .footer {
-  background: #eaf4f8;
+  background-color: #f1f5f9;
   padding: 30px 20px;
   text-align: center;
 }
@@ -331,48 +356,30 @@
   color: #666;
 }
 
+/* ========== Responsive ========== */
 @media (max-width: 768px) {
+  .stepList,
   .contentContainer,
   .featureCards,
-  .stepList,
-  .courseCards,
-  .footerLinks {
+  .courseCards {
     flex-direction: column;
     align-items: center;
   }
 
-  .imageSection img {
-    max-width: 600px;
+  .animatedLine,
+  .pulseDot {
+    display: none;
   }
 
-  .headline {
-    text-align: center;
+  .imageSection img {
+    max-width: 90%;
   }
 
   .buttons {
     justify-content: center;
   }
 
-  .heroImage {
-    max-width: 80%;
-    margin-top: 20px;
-  }
-
-  .ctaButtons button {
-    width: 100%;
-    max-width: 280px;
-  }
-
-  .dashboardLogo {
-    font-size: 20px;
-  }
-
-  .dashboardBtn {
-    font-size: 14px;
-    padding: 8px 14px;
-  }
-
-  .stepList::before {
-    display: none;
+  .headline {
+    text-align: center;
   }
 }
