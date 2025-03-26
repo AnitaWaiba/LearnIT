@@ -61,7 +61,7 @@ label {
   transform: translateY(-50%);
   cursor: pointer;
   font-size: 1.2rem;
-  color: #ffffff;
+  color: #000000;
 }
 
 .forgotPassword {

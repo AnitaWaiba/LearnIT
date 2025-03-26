@@ -1,0 +1,87 @@
+.editContainer {
+    padding: 40px;
+    background-color: #f9fafb;
+    color: #1f2937;
+  }
+  
+  .banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .avatar {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #3b82f6;
+  }
+  
+  .editBtn {
+    position: absolute;
+    bottom: 6px;
+    left: 100px;
+    background: none;
+    border: 1.5px solid #3b82f6;
+    color: #3b82f6;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  
+  .editBtn:hover {
+    background-color: #e0f2fe;
+  }
+  
+  .avatarUpload {
+    margin-bottom: 20px;
+  }
+  
+  .uploadLabel {
+    background-color: #2563eb;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-block;
+  }
+  
+  .hiddenInput {
+    display: none;
+  }
+  
+  .spinner {
+    margin-top: 10px;
+    color: #111827;
+    font-size: 0.9rem;
+  }
+  
+  .profileInfo {
+    margin-bottom: 30px;
+  }
+  
+  .profileInfo h1 {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .username {
+    color: #6b7280;
+  }
+  
+  .joined {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+  
