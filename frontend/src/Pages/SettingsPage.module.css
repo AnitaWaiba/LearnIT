@@ -8,7 +8,7 @@
   
   .sidebar {
     grid-area: sidebar;
-    background-color: #1e293b;
+    background-color: #ffffff;
     color: white;
     overflow-y: auto;
     padding: 0;

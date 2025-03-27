@@ -8,6 +8,7 @@ from myapp.views import (
     SignupView,
     CustomLoginView,
     ProfileView,
+    update_profile_credentials,
     admin_dashboard,
     list_users,
     create_user,
@@ -27,16 +28,17 @@ urlpatterns = [
     # ✅ Root Test Endpoint
     path('', lambda request: HttpResponse("✅ Django API is running")),
 
-    # 🔐 Authentication (Custom)
+    # 🔐 Authentication Endpoints
     path('api/signup/', SignupView.as_view(), name='signup'),
     path('api/login/', CustomLoginView.as_view(), name='login'),
 
-    # 👤 User Profile (Authenticated GET/PUT)
-    path('api/profile/', ProfileView.as_view(), name='user_profile'),
-
-    # 🔑 JWT Token Endpoints (Optional if using SimpleJWT directly)
+    # 🔑 JWT Authentication (SimpleJWT)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # 👤 User Profile Endpoints
+    path('api/profile/', ProfileView.as_view(), name='user_profile'),
+    path('api/profile/update/', update_profile_credentials, name='update_profile_credentials'),
 
     # 🛠️ Admin Dashboard & User Management
     path('api/admin/dashboard/', admin_dashboard, name='admin_dashboard'),
@@ -45,11 +47,11 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/update/', update_user, name='update_user'),
     path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
 
-    # ✅ Optional: dj-rest-auth login/logout/password reset/registration
+    # 🔄 dj-rest-auth (optional)
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
 
-# ✅ Serve media files during development (for avatar uploads, lesson icons, etc.)
+# ✅ Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

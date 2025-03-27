@@ -192,3 +192,32 @@ def delete_user(request, user_id):
         return Response({'error': 'User not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+# ===========================================
+# ✏️ UPDATE PROFILE CREDENTIALS
+# ===========================================
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile_credentials(request):
+    user = request.user
+    data = request.data
+
+    username = data.get("username")
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+
+    if not current_password or not new_password or not username:
+        return Response({"error": "All fields are required."}, status=400)
+
+    if not user.check_password(current_password):
+        return Response({"error": "Current password is incorrect."}, status=400)
+
+    if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+        return Response({"error": "Username is already taken."}, status=400)
+
+    user.username = username
+    user.set_password(new_password)
+    user.save()
+
+    return Response({"message": "Profile updated successfully."})
