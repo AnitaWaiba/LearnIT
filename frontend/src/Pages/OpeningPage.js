@@ -172,6 +172,7 @@ function OpeningPage() {
         <div className={styles.footerLinks}>
           <a href="/about">About Us</a>
           <a href="/terms">Terms</a>
+          <a href="/help">Help Center</a>
           <a href="/privacy">Privacy</a>
           <a href="/contact">Contact</a>
         </div>

@@ -3,64 +3,27 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import styles from './SettingsPage.module.css';
 import Dashboard from '../Components/Dashboard';
 import EditProfile from './EditProfile';
+import HelpPage from './HelpPage';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
 
-  const showLogoutToast = () => {
-    const toastId = toast(
-      ({ closeToast }) => (
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ marginBottom: '10px' }}>Are you sure you want to logout?</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-            <button
-              onClick={() => {
-                toast.dismiss(toastId);
-                toast.success('You have been logged out!');
-                setTimeout(() => navigate('/'), 1500);
-              }}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '6px 12px',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              OK
-            </button>
-            <button
-              onClick={() => toast.dismiss(toastId)}
-              style={{
-                backgroundColor: '#f3f4f6',
-                color: '#111827',
-                padding: '6px 12px',
-                border: '1px solid #ccc',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        position: 'top-center',
-        autoClose: false,
-        closeOnClick: false,
-        draggable: false,
-        closeButton: false,
-      }
-    );
+  const handleLogout = () => {
+    toast.success('✅ You have been logged out!', {
+      position: 'top-center',
+      autoClose: 2000,
+    });
+    localStorage.removeItem('access'); // Clear auth token if stored
+    setTimeout(() => navigate('/'), 2000);
   };
 
   const handleTabClick = (tab) => {
     if (tab === 'logout') {
-      showLogoutToast();
+      if (window.confirm('Are you sure you want to logout?')) {
+        handleLogout();
+      }
     } else {
       navigate(`/settings/${tab}`);
     }
@@ -89,15 +52,7 @@ const SettingsPage = () => {
               </div>
             }
           />
-          <Route
-            path="help"
-            element={
-              <div>
-                <h2>❓ Help Center</h2>
-                <p>Need assistance? Visit the help center for FAQs and support.</p>
-              </div>
-            }
-          />
+          <Route path="help" element={<HelpPage />} />
         </Routes>
       </main>
 

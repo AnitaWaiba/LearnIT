@@ -7,6 +7,7 @@ import OpeningPage from './Pages/OpeningPage';
 import Signup from './Pages/Signup';
 import Login from './Pages/Login';
 import ContactUs from './Pages/ContactUs';
+import AboutUs from './Pages/AboutUs';
 
 // 📚 Learning Pages
 import Option from './Pages/Option';
@@ -17,6 +18,7 @@ import DailyQuests from './Pages/DailyQuests';
 import ProfilePage from './Pages/ProfilePage';
 import EditProfile from './Pages/EditProfile';
 import SettingsPage from './Pages/SettingsPage';
+import HelpPage from './Pages/HelpPage';
 
 // 🛠️ Admin Panel
 import AdminDashboard from './Admin/AdminDashboard';
@@ -32,6 +34,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/about" element={<AboutUs />} />
 
         {/* 📚 Learning Content */}
         <Route path="/option" element={<Option />} />
@@ -44,6 +47,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit" element={<EditProfile />} />
         <Route path="/settings/*" element={<SettingsPage />} />
+        <Route path="/help" element={<HelpPage />} />
 
         {/* 🛠️ Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />
