@@ -19,6 +19,7 @@ import ProfilePage from './Pages/ProfilePage';
 import EditProfile from './Pages/EditProfile';
 import SettingsPage from './Pages/SettingsPage';
 import HelpPage from './Pages/HelpPage';
+import Terms from './Pages/Terms';
 
 // 🛠️ Admin Panel
 import AdminDashboard from './Admin/AdminDashboard';
@@ -48,6 +49,7 @@ function App() {
         <Route path="/edit" element={<EditProfile />} />
         <Route path="/settings/*" element={<SettingsPage />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/terms" element={<Terms />} />
 
         {/* 🛠️ Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />
