@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './HelpPage.module.css';
+import { Link } from 'react-router-dom';
 
 const faqData = [
   {
@@ -85,7 +86,14 @@ const HelpPage = () => {
 
   return (
     <div className={styles.container}>
+      <nav className={styles.breadcrumbs}>
+        <Link to="/settings" className={styles.crumb}>🏠 Home</Link>
+        <span className={styles.separator}>/</span>
+        <span className={styles.current}>Help Center</span>
+      </nav>
+
       <h1 className={styles.header}>Frequently Asked Questions</h1>
+
       {faqData.map((section, sectionIndex) => (
         <div key={sectionIndex} className={styles.section}>
           <h2 className={styles.category}>{section.category}</h2>

@@ -20,6 +20,7 @@ import EditProfile from './Pages/EditProfile';
 import SettingsPage from './Pages/SettingsPage';
 import HelpPage from './Pages/HelpPage';
 import Terms from './Pages/Terms';
+import Privacy from './Pages/Privacy';
 
 // 🛠️ Admin Panel
 import AdminDashboard from './Admin/AdminDashboard';
@@ -50,6 +51,7 @@ function App() {
         <Route path="/settings/*" element={<SettingsPage />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
 
         {/* 🛠️ Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />

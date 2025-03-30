@@ -4,6 +4,34 @@
     padding: 40px 20px;
     background: #f9fafb;
   }
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #334155;
+  }
+  
+  .crumb {
+    color: #007b8a;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .crumb:hover {
+    text-decoration: underline;
+  }
+  
+  .separator {
+    margin: 0 8px;
+    color: #94a3b8;
+  }
+  
+  .current {
+    font-weight: 600;
+    color: #1e293b;
+  }
   
   .header {
     font-size: 32px;
