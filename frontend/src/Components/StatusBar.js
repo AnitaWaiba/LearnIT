@@ -1,37 +1,61 @@
-import React from "react";
-import "./StatusBar.css"; // ✅ Make sure this file exists
+import React, { useState } from 'react';
+import styles from './StatusBar.module.css';
+import { useNavigate } from 'react-router-dom';
+import { useProfileStore } from '../Store/profileStore';
+import { FaFire, FaHeart, FaGem } from 'react-icons/fa';
+import { MdComputer } from 'react-icons/md';
 
-// ✅ Ensure all icons are imported
-import { FaFire, FaHeart, FaLaptopCode } from "react-icons/fa"; 
-import { GiHexagonalNut } from "react-icons/gi"; // Hexagon for XP
+function StatusBar() {
+  const navigate = useNavigate();
+  const { courses, selectedCourse, setSelectedCourse } = useProfileStore();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-const StatusBar = () => {
+  const handleCourseChange = (course) => {
+    setSelectedCourse(course.name);
+    setDropdownOpen(false);
+    navigate(`/learn?course=${course.name}`);
+  };
+
   return (
-    <div className="status-bar">
-      {/* Programming Icon (Replaces Flag) */}
-      <div className="status-item">
-        <FaLaptopCode className="icon laptop-icon" />
+    <div className={styles.statusContainer}>
+      <div className={styles.iconWrapper}>
+        <MdComputer
+          className={styles.courseIcon}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          title={selectedCourse}
+        />
+        {dropdownOpen && (
+          <div className={styles.dropdown}>
+            {courses.map(course => (
+              <div
+                key={course.name}
+                className={styles.dropdownItem}
+                onClick={() => handleCourseChange(course)}
+              >
+                <MdComputer className={styles.dropdownIcon} />
+                <span>{course.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Streak Count (Faded if inactive) */}
-      <div className="status-item streak inactive">
-        <FaFire className="icon" />
-        <span>264</span>
-      </div>
-
-      {/* XP Points */}
-      <div className="status-item xp">
-        <GiHexagonalNut className="icon" />
-        <span>3782</span>
-      </div>
-
-      {/* Hearts (Lives) */}
-      <div className="status-item hearts">
-        <FaHeart className="icon" />
-        <span>5</span>
+      <div className={styles.statRow}>
+        <div className={styles.stat}>
+          <FaFire className={`${styles.statIcon} ${styles.fire}`} />
+          <span>264</span>
+        </div>
+        <div className={styles.stat}>
+          <FaGem className={`${styles.statIcon} ${styles.gem}`} />
+          <span>3782</span>
+        </div>
+        <div className={styles.stat}>
+          <FaHeart className={`${styles.statIcon} ${styles.heart}`} />
+          <span>5</span>
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default StatusBar;
