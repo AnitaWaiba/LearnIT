@@ -1,0 +1,74 @@
+.learnSection {
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.sectionHeader {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1e3c4a;
+  margin-bottom: 20px;
+}
+
+.sectionHeader h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0d697b;
+  margin-top: 10px;
+}
+
+/* Lesson Buttons Path */
+.path {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+/* Common styles for all buttons */
+.lessonButton {
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status styles */
+.completed {
+  background-color: #10b981; /* green */
+  color: white;
+}
+
+.unlocked {
+  background-color: #3b82f6; /* blue */
+  color: white;
+}
+
+.locked {
+  background-color: #cbd5e1; /* gray */
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Scroll Arrow */
+.scrollArrow {
+  margin-top: 30px;
+  background: none;
+  border: none;
+  color: #1e3c4a;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.scrollArrow:hover {
+  transform: scale(1.1);
+}
