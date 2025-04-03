@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import styles from './SettingsPage.module.css';
 import Dashboard from '../Components/Dashboard';
@@ -9,13 +9,14 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
+  const [isSidebarOpen, setSidebarOpen] = useState(false); // collapsed by default on mobile
 
   const handleLogout = () => {
     toast.success('✅ You have been logged out!', {
       position: 'top-center',
       autoClose: 2000,
     });
-    localStorage.removeItem('access'); // Clear auth token if stored
+    localStorage.removeItem('access');
     setTimeout(() => navigate('/'), 2000);
   };
 
@@ -33,12 +34,24 @@ const SettingsPage = () => {
     <div className={styles.gridLayout}>
       <ToastContainer />
 
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
+      {/* ☰ Hamburger Toggle Button */}
+      <button
+        className={styles.toggleButton}
+        onClick={() => setSidebarOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+
+      {/* Sidebar with toggle */}
+      <aside
+        className={`${styles.sidebar} ${
+          isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
+        }`}
+      >
         <Dashboard />
       </aside>
 
-      {/* Main Content */}
+      {/* Center content */}
       <main className={styles.mainContent}>
         <Routes>
           <Route path="/" element={<Navigate to="profile" replace />} />
@@ -56,7 +69,7 @@ const SettingsPage = () => {
         </Routes>
       </main>
 
-      {/* Right Panel */}
+      {/* Right side action panel */}
       <aside className={styles.actionPanel}>
         <div className={styles.card} onClick={() => handleTabClick('profile')}>
           👤 Profile
