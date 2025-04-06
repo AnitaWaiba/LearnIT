@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { getProfile } from './utils/api';
+import { useProfileStore } from './Store/profileStore';
 
 // 🌐 Public Pages
 import OpeningPage from './Pages/OpeningPage';
@@ -13,8 +15,9 @@ import AboutUs from './Pages/AboutUs';
 import Option from './Pages/Option';
 import Home from './Pages/Introduction/Home';
 import DailyQuests from './Pages/DailyQuests';
+import LearnPage from './Pages/LearnPage';
 
-// 🧑‍💼 User Pages
+// 👤 User Pages
 import ProfilePage from './Pages/ProfilePage';
 import EditProfile from './Pages/EditProfile';
 import SettingsPage from './Pages/SettingsPage';
@@ -22,30 +25,63 @@ import HelpPage from './Pages/HelpPage';
 import Terms from './Pages/Terms';
 import Privacy from './Pages/Privacy';
 
-// 🛠️ Admin Panel
+// 🛠️ Admin
 import AdminDashboard from './Admin/AdminDashboard';
 import ManageUsers from './Admin/ManageUsers';
 
-// 🚀 App Entry
+// 🧱 Layouts
+import LearnLayout from './Components/LearnLayout';
+import QuestLayout from './Components/QuestLayout';
+
 function App() {
+  const setCourses = useProfileStore((state) => state.setCourses);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await getProfile();
+        setCourses(response.data.courses || []);
+      } catch (error) {
+        console.error('Failed to load profile courses', error);
+      }
+    };
+
+    fetchCourses();
+  }, [setCourses]);
+
   return (
     <Router>
       <Routes>
-        {/* 🌐 Public Routes */}
+        {/* 🌐 Public */}
         <Route path="/" element={<OpeningPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
 
-        {/* 📚 Learning Content */}
+        {/* 📚 Learning */}
         <Route path="/option" element={<Option />} />
-        <Route path="/home" element={<Home />} />
+        <Route
+          path="/home"
+          element={
+            <LearnLayout>
+              <Home />
+            </LearnLayout>
+          }
+        />
         <Route path="/frontend" element={<div>Front-end Development Page</div>} />
         <Route path="/backend" element={<div>Back-end Development Page</div>} />
-        <Route path="/dailyquests" element={<DailyQuests />} />
+        <Route
+          path="/dailyquests"
+          element={
+            <QuestLayout>
+              <DailyQuests />
+            </QuestLayout>
+          }
+        />
+        <Route path="/learn" element={<LearnPage />} />
 
-        {/* 👤 User Management */}
+        {/* 👤 User */}
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit" element={<EditProfile />} />
         <Route path="/settings/*" element={<SettingsPage />} />
@@ -53,11 +89,11 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
 
-        {/* 🛠️ Admin Routes */}
+        {/* 🛠️ Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manageusers" element={<ManageUsers />} />
 
-        {/* 🚫 404 Fallback */}
+        {/* 🚫 404 */}
         <Route
           path="*"
           element={

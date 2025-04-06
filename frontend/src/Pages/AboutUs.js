@@ -21,7 +21,7 @@ const AboutUs = () => {
           <Lottie animationData={animation1} loop />
         </div>
         <div className={styles.text}>
-          <h2>Who We Are</h2>
+          <h2>Who Are We</h2>
           <p>
             LearnIT is a gamified educational platform designed to make learning computer and programming basics fun,
             engaging, and rewarding. We’re developers and educators combining playful design with real learning.
