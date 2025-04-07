@@ -52,26 +52,25 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-# ==========================================
-#  ProfileSerializer
-# ==========================================
 class ProfileSerializer(serializers.ModelSerializer):
-    avatar = serializers.ImageField(source='userprofile.avatar', required=False)
+    avatar = serializers.ImageField(source='profile.avatar', required=False)
+    courses = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'date_joined', 'avatar']
+        fields = ['username', 'first_name', 'date_joined', 'avatar', 'courses']
 
     def update(self, instance, validated_data):
-        user_profile_data = validated_data.pop('userprofile', {})
+        # Pop out nested profile data if present
+        user_profile_data = validated_data.pop('profile', {})
 
-        # Update basic user fields if needed
+        # Update User model fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Update the avatar (UserProfile model)
-        profile, created = UserProfile.objects.get_or_create(user=instance)
+        # Update avatar in UserProfile
+        profile, _ = UserProfile.objects.get_or_create(user=instance)
         avatar = user_profile_data.get('avatar')
 
         if avatar:
@@ -79,3 +78,15 @@ class ProfileSerializer(serializers.ModelSerializer):
             profile.save()
 
         return instance
+
+    def get_courses(self, obj):
+        profile = getattr(obj, 'profile', None)
+        if profile and profile.courses.exists():
+            return [
+                {
+                    'name': lesson.title,
+                    'icon': lesson.icon.url if lesson.icon else None
+                }
+                for lesson in profile.courses.all()
+            ]
+        return []

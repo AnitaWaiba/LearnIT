@@ -5,4 +5,4 @@ class MyappConfig(AppConfig):
     name = 'myapp'
 
     def ready(self):
-        import myapp.signals  # Ensures signal handlers are registered
+        import myapp.signals  # 👈 make sure this line is here

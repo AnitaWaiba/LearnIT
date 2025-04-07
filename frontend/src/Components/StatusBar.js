@@ -1,61 +1,74 @@
 import React, { useState } from 'react';
-import styles from './StatusBar.module.css';
 import { useNavigate } from 'react-router-dom';
-import { useProfileStore } from '../Store/profileStore';
-import { FaFire, FaHeart, FaGem } from 'react-icons/fa';
-import { MdComputer } from 'react-icons/md';
+import styles from './StatusBar.module.css';
 
-function StatusBar() {
+// ✅ Image imports from /src/Image
+import introIcon from '../Image/intro.png';
+import frontendIcon from '../Image/frontend1.png';
+import backendIcon from '../Image/backend1.png';
+
+const courseIconMap = {
+  'Introduction to Computer': introIcon,
+  'Frontend Development': frontendIcon,
+  'Backend Development': backendIcon,
+};
+
+const defaultCourses = [
+  { name: 'Introduction to Computer', path: '/home' },
+  { name: 'Frontend Development', path: '/frontend' },
+  { name: 'Backend Development', path: '/backend' },
+];
+
+const StatusBar = () => {
   const navigate = useNavigate();
-  const { courses, selectedCourse, setSelectedCourse } = useProfileStore();
+  const [selectedCourse, setSelectedCourse] = useState(defaultCourses[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const handleCourseChange = (course) => {
-    setSelectedCourse(course.name);
+  const handleSelectCourse = (course) => {
+    setSelectedCourse(course);
     setDropdownOpen(false);
-    navigate(`/learn?course=${course.name}`);
+    navigate(course.path);
   };
 
   return (
     <div className={styles.statusContainer}>
-      <div className={styles.iconWrapper}>
-        <MdComputer
-          className={styles.courseIcon}
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          title={selectedCourse}
-        />
-        {dropdownOpen && (
-          <div className={styles.dropdown}>
-            {courses.map(course => (
-              <div
-                key={course.name}
-                className={styles.dropdownItem}
-                onClick={() => handleCourseChange(course)}
-              >
-                <MdComputer className={styles.dropdownIcon} />
-                <span>{course.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className={styles.statusBar}>
+        <div className={styles.courseSelector} onClick={() => setDropdownOpen(!dropdownOpen)}>
+          <img
+            src={courseIconMap[selectedCourse.name]}
+            alt={selectedCourse.name}
+            className={styles.courseIcon}
+          />
+        </div>
+
+        <div className={styles.stat}>🔥 <span>264</span></div>
+        <div className={styles.stat}>💎 <span>3782</span></div>
+        <div className={styles.stat}>❤️ <span>5</span></div>
       </div>
 
-      <div className={styles.statRow}>
-        <div className={styles.stat}>
-          <FaFire className={`${styles.statIcon} ${styles.fire}`} />
-          <span>264</span>
+      {dropdownOpen && (
+        <div className={styles.dropdown}>
+          <h4 className={styles.dropdownTitle}>MY COURSES</h4>
+          {defaultCourses.map((course) => (
+            <div
+              key={course.name}
+              className={`${styles.dropdownItem} ${
+                course.name === selectedCourse.name ? styles.active : ''
+              }`}
+              onClick={() => handleSelectCourse(course)}
+            >
+              <img
+                src={courseIconMap[course.name]}
+                alt={course.name}
+                className={styles.dropdownIcon}
+              />
+              <span>{course.name}</span>
+            </div>
+          ))}
         </div>
-        <div className={styles.stat}>
-          <FaGem className={`${styles.statIcon} ${styles.gem}`} />
-          <span>3782</span>
-        </div>
-        <div className={styles.stat}>
-          <FaHeart className={`${styles.statIcon} ${styles.heart}`} />
-          <span>5</span>
-        </div>
-      </div>
+      )}
     </div>
   );
-}
+};
 
 export default StatusBar;
