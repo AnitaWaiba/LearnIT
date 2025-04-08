@@ -1,27 +1,28 @@
 import React from 'react';
 import { useCourseStore } from '../Store/courseStore';
+import Home from './Introduction/Home';
+import Frontend from './FrontendLearning/Frontend';
+import Backend from './BackendLearning/Backend';
 
-function LearnPage() {
+const LearnPage = () => {
   const selectedCourse = useCourseStore((state) => state.selectedCourse);
 
-  const renderContent = () => {
-    switch (selectedCourse) {
+  const renderCoursePage = () => {
+    switch (selectedCourse.id) {
       case 'frontend':
-        return <div>🚀 Learn Frontend Development</div>;
+        return <Frontend />;
       case 'backend':
-        return <div>🔧 Learn Backend Development</div>;
-      case 'intro':
+        return <Backend />;
       default:
-        return <div>💡 Learn Introduction to Computer</div>;
+        return <Home />;
     }
   };
 
   return (
-    <div style={{ padding: '30px' }}>
-      <h2>Learning: {selectedCourse}</h2>
-      {renderContent()}
+    <div>
+      {renderCoursePage()}
     </div>
   );
-}
+};
 
 export default LearnPage;

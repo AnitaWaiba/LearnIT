@@ -1,36 +1,70 @@
-.learnSection {
-  padding: 30px 20px;
-  text-align: center;
-}
-
-.sectionHeader {
-  font-size: 18px;
-  font-weight: bold;
-  color: #1e3c4a;
-  margin-bottom: 20px;
-}
-
-.sectionHeader h2 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #0d697b;
-  margin-top: 10px;
-}
-
-/* Lesson Buttons Path */
-.path {
+.container {
+  height: 100vh;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 30px;
+  overflow: hidden;
 }
 
-/* Common styles for all buttons */
+/* This scrolls ONLY the center panel */
+.lessonScroll {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 0;
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+.unitBlock {
+  margin-bottom: 60px;
+}
+
+.banner {
+  background-color: #56c2d6;
+  padding: 20px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.banner h2 {
+  font-size: 24px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.lessonPath {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+  gap: 40px;
+}
+
+.lessonWrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Smoothed wave style */
+.lessonWrapper:nth-child(10n+1)  { transform: translateX(0px); }
+.lessonWrapper:nth-child(10n+2)  { transform: translateX(30px); }
+.lessonWrapper:nth-child(10n+3)  { transform: translateX(50px); }
+.lessonWrapper:nth-child(10n+4)  { transform: translateX(30px); }
+.lessonWrapper:nth-child(10n+5)  { transform: translateX(0px); }
+.lessonWrapper:nth-child(10n+6)  { transform: translateX(-30px); }
+.lessonWrapper:nth-child(10n+7)  { transform: translateX(-50px); }
+.lessonWrapper:nth-child(10n+8)  { transform: translateX(-30px); }
+.lessonWrapper:nth-child(10n+9)  { transform: translateX(0px); }
+.lessonWrapper:nth-child(10n+10) { transform: translateX(20px); }
+
 .lessonButton {
-  width: 60px;
-  height: 60px;
-  font-size: 20px;
+  width: 70px;
+  height: 70px;
+  font-size: 22px;
   font-weight: bold;
   border-radius: 50%;
   border: none;
@@ -39,36 +73,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Status styles */
 .completed {
-  background-color: #10b981; /* green */
+  background-color: #10b981;
   color: white;
 }
 
 .unlocked {
-  background-color: #3b82f6; /* blue */
+  background-color: #3b82f6;
   color: white;
 }
 
 .locked {
-  background-color: #cbd5e1; /* gray */
+  background-color: #cbd5e1;
   color: #6b7280;
   cursor: not-allowed;
-}
-
-/* Scroll Arrow */
-.scrollArrow {
-  margin-top: 30px;
-  background: none;
-  border: none;
-  color: #1e3c4a;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.scrollArrow:hover {
-  transform: scale(1.1);
 }

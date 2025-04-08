@@ -12,6 +12,8 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} Profile"
 
+    current_streak = models.PositiveIntegerField(default=0)
+    last_completed_date = models.DateField(null=True, blank=True)
 
 # ===========================================
 # ✅ LESSON MODEL (with icon support)

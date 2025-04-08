@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
 from .models import UserProfile
-
+from .models import Lesson
 
 # ==========================================
 # 🔐 Basic User Serializer for Admin/User Ops
@@ -90,3 +90,8 @@ class ProfileSerializer(serializers.ModelSerializer):
                 for lesson in profile.courses.all()
             ]
         return []
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'description', 'content', 'icon', 'created_at']

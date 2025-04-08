@@ -38,7 +38,7 @@ const Dashboard = () => {
       <h2 className={styles.logo}>{!isCollapsed && "LearnIT"}</h2>
 
       <nav className={styles.navMenu}>
-        <NavLink to="/home" className={styles.navItem}>
+        <NavLink to="/learn" className={styles.navItem}>
           <FaGraduationCap className={styles.icon} />
           {!isCollapsed && <span>LEARN</span>}
         </NavLink>

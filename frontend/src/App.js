@@ -14,6 +14,8 @@ import AboutUs from './Pages/AboutUs';
 // 📚 Learning Pages
 import Option from './Pages/Option';
 import Home from './Pages/Introduction/Home';
+import Frontend from './Pages/FrontendLearning/Frontend';
+import Backend from './Pages/BackendLearning/Backend';
 import DailyQuests from './Pages/DailyQuests';
 import LearnPage from './Pages/LearnPage';
 
@@ -59,8 +61,17 @@ function App() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
 
-        {/* 📚 Learning */}
+        {/* 📚 Learning Routes */}
         <Route path="/option" element={<Option />} />
+
+        <Route
+          path="/learn"
+          element={
+            <LearnLayout>
+              <LearnPage />
+            </LearnLayout>
+          }
+        />
         <Route
           path="/home"
           element={
@@ -69,8 +80,22 @@ function App() {
             </LearnLayout>
           }
         />
-        <Route path="/frontend" element={<div>Front-end Development Page</div>} />
-        <Route path="/backend" element={<div>Back-end Development Page</div>} />
+        <Route
+          path="/frontend"
+          element={
+            <LearnLayout>
+              <Frontend />
+            </LearnLayout>
+          }
+        />
+        <Route
+          path="/backend"
+          element={
+            <LearnLayout>
+              <Backend />
+            </LearnLayout>
+          }
+        />
         <Route
           path="/dailyquests"
           element={
@@ -79,9 +104,8 @@ function App() {
             </QuestLayout>
           }
         />
-        <Route path="/learn" element={<LearnPage />} />
 
-        {/* 👤 User */}
+        {/* 👤 User Pages */}
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit" element={<EditProfile />} />
         <Route path="/settings/*" element={<SettingsPage />} />
@@ -93,7 +117,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manageusers" element={<ManageUsers />} />
 
-        {/* 🚫 404 */}
+        {/* 🚫 404 Not Found */}
         <Route
           path="*"
           element={

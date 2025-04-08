@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './StatusBar.module.css';
+import { useCourseStore } from '../Store/courseStore';
 
-// ✅ Image imports from /src/Image
+// 📦 Course Icons from /src/Image
 import introIcon from '../Image/intro.png';
 import frontendIcon from '../Image/frontend1.png';
 import backendIcon from '../Image/backend1.png';
@@ -14,15 +15,18 @@ const courseIconMap = {
 };
 
 const defaultCourses = [
-  { name: 'Introduction to Computer', path: '/home' },
-  { name: 'Frontend Development', path: '/frontend' },
-  { name: 'Backend Development', path: '/backend' },
+  { id: 'intro', name: 'Introduction to Computer', path: '/home' },
+  { id: 'frontend', name: 'Frontend Development', path: '/frontend' },
+  { id: 'backend', name: 'Backend Development', path: '/backend' },
 ];
 
 const StatusBar = () => {
   const navigate = useNavigate();
-  const [selectedCourse, setSelectedCourse] = useState(defaultCourses[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // 🧠 Zustand global store usage
+  const selectedCourse = useCourseStore((state) => state.selectedCourse);
+  const setSelectedCourse = useCourseStore((state) => state.setSelectedCourse);
 
   const handleSelectCourse = (course) => {
     setSelectedCourse(course);
@@ -51,9 +55,9 @@ const StatusBar = () => {
           <h4 className={styles.dropdownTitle}>MY COURSES</h4>
           {defaultCourses.map((course) => (
             <div
-              key={course.name}
+              key={course.id}
               className={`${styles.dropdownItem} ${
-                course.name === selectedCourse.name ? styles.active : ''
+                course.id === selectedCourse.id ? styles.active : ''
               }`}
               onClick={() => handleSelectCourse(course)}
             >

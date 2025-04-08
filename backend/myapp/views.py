@@ -1,5 +1,3 @@
-# myapp/views.py
-
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import status
@@ -10,8 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Lesson, Enrollment, Review
-from .serializers import UserSerializer
-
+from .serializers import UserSerializer, LessonSerializer
 
 # ===========================================
 # 🔐 AUTHENTICATION
@@ -69,7 +66,6 @@ class CustomLoginView(APIView):
 
         return Response({"error": "Invalid credentials."}, status=401)
 
-
 # ===========================================
 # 👤 PROFILE
 # ===========================================
@@ -103,7 +99,6 @@ class ProfileView(APIView):
             "courses": courses
         })
 
-
 # ===========================================
 # 🛠️ ADMIN DASHBOARD
 # ===========================================
@@ -127,7 +122,6 @@ def admin_dashboard(request):
     }
 
     return Response(data)
-
 
 # ===========================================
 # 👥 USER MANAGEMENT (Admin only)
@@ -221,3 +215,18 @@ def update_profile_credentials(request):
     user.save()
 
     return Response({"message": "Profile updated successfully."})
+
+# ===========================================
+# 📘 LESSON FILTER BY COURSE
+# ===========================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lessons_by_course(request):
+    course_id = request.GET.get('course')
+    if not course_id:
+        return Response({"error": "Course ID is required."}, status=400)
+
+    lessons = Lesson.objects.filter(title__icontains=course_id)
+    serializer = LessonSerializer(lessons, many=True)
+    return Response(serializer.data)

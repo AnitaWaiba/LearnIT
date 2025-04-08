@@ -1,71 +1,79 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styles from "./Home.module.css";
-import { FaCheck, FaLock, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaCheck, FaLock } from "react-icons/fa";
+
+const allLessons = Array.from({ length: 30 }, (_, i) => ({
+  id: i + 1,
+  title: `Lesson ${i + 1}`,
+}));
+
+const chunkLessons = (lessons, chunkSize = 5) => {
+  const result = [];
+  for (let i = 0; i < lessons.length; i += chunkSize) {
+    result.push(lessons.slice(i, i + chunkSize));
+  }
+  return result;
+};
 
 const Home = () => {
   const [progress, setProgress] = useState(2);
-  const [showUpArrow, setShowUpArrow] = useState(false);
+  const lessonChunks = chunkLessons(allLessons);
 
-  const lessons = [
-    { id: 1, completed: true },
-    { id: 2, completed: true },
-    { id: 3, completed: false },
-    { id: 4, completed: false },
-    { id: 5, completed: false },
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => setShowUpArrow(window.scrollY > 100);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleScrollTo = () => {
-    window.scrollTo({
-      top: showUpArrow ? 0 : document.body.scrollHeight,
-      behavior: "smooth",
-    });
-  };
-
-  const handleLessonClick = (id) => {
-    if (id <= progress) {
-      alert(`Starting Lesson ${id}`);
-      setProgress(id + 1);
+  const handleLessonClick = (lesson) => {
+    if (lesson.id <= progress + 1) {
+      alert(`Starting ${lesson.title}`);
+      setProgress(lesson.id);
     }
   };
 
   return (
-    <div className={styles.learnSection}>
-      <div className={styles.sectionHeader}>
-        ← SECTION 1, UNIT 1
-        <h2>History of Computer</h2>
+    <div className={styles.learnGrid}>
+      <div className={styles.leftSidebar}>{/* Dashboard */}</div>
+
+      <div className={styles.centerContent}>
+        <div className={styles.lessonScroll}>
+          {lessonChunks.map((chunk, index) => (
+            <div className={styles.unitBlock} key={index}>
+              <div className={styles.banner}>
+                ← Section 1, Unit {index + 1}
+                <h2>{chunk[0]?.title}</h2>
+              </div>
+
+              <div className={styles.lessonPath}>
+                {chunk.map((lesson) => {
+                  const isCompleted = lesson.id < progress;
+                  const isUnlocked = lesson.id <= progress + 1;
+                  const buttonClass = isCompleted
+                    ? styles.completed
+                    : isUnlocked
+                    ? styles.unlocked
+                    : styles.locked;
+
+                  return (
+                    <div key={lesson.id} className={styles.lessonWrapper}>
+                      <button
+                        className={`${styles.lessonButton} ${buttonClass}`}
+                        onClick={() => handleLessonClick(lesson)}
+                        disabled={!isUnlocked}
+                      >
+                        {isCompleted ? (
+                          <FaCheck />
+                        ) : isUnlocked ? (
+                          lesson.id
+                        ) : (
+                          <FaLock />
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className={styles.path}>
-        {lessons.map((lesson) => {
-          const isUnlocked = lesson.id <= progress;
-          const buttonClass = lesson.completed
-            ? styles.completed
-            : isUnlocked
-            ? styles.unlocked
-            : styles.locked;
-
-          return (
-            <button
-              key={lesson.id}
-              className={`${styles.lessonButton} ${buttonClass}`}
-              onClick={() => handleLessonClick(lesson.id)}
-              disabled={!isUnlocked}
-            >
-              {lesson.completed ? <FaCheck /> : isUnlocked ? lesson.id : <FaLock />}
-            </button>
-          );
-        })}
-      </div>
-
-      <button className={styles.scrollArrow} onClick={handleScrollTo}>
-        {showUpArrow ? <FaChevronUp /> : <FaChevronDown />}
-      </button>
+      <div className={styles.rightSidebar}>{/* StatusBar, etc */}</div>
     </div>
   );
 };
