@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styles from "./Frontend.module.css";
 import { FaCheck, FaLock } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+
 
 const allLessons = Array.from({ length: 30 }, (_, i) => ({
   id: i + 1,
@@ -16,15 +18,16 @@ const chunkLessons = (lessons, chunkSize = 5) => {
 };
 
 const Frontend = () => {
-  const [progress, setProgress] = useState(2);
-  const lessonChunks = chunkLessons(allLessons);
+    const navigate = useNavigate();
+    const [progress, setProgress] = useState(2);
+    const lessonChunks = chunkLessons(allLessons);
 
-  const handleLessonClick = (lesson) => {
-    if (lesson.id <= progress + 1) {
-      alert(`Starting ${lesson.title}`);
-      setProgress(lesson.id);
-    }
-  };
+    const handleLessonClick = (lesson) => {
+        if (lesson.id <= progress + 1) {
+        alert(`Starting ${lesson.title}`);
+        setProgress(lesson.id);
+        }
+    };
 
   return (
     <div className={styles.learnGrid}>
@@ -53,7 +56,7 @@ const Frontend = () => {
                     <div key={lesson.id} className={styles.lessonWrapper}>
                       <button
                         className={`${styles.lessonButton} ${buttonClass}`}
-                        onClick={() => handleLessonClick(lesson)}
+                        onClick={() => navigate(`/lesson/${lesson.id}`)}
                         disabled={!isUnlocked}
                       >
                         {isCompleted ? <FaCheck /> : isUnlocked ? lesson.id : <FaLock />}

@@ -13,7 +13,8 @@ from myapp.views import (
     list_users,
     create_user,
     update_user,
-    delete_user
+    delete_user,
+    get_lesson_questions
 )
 
 from rest_framework_simplejwt.views import (
@@ -47,11 +48,14 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/update/', update_user, name='update_user'),
     path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
 
+    # 📘 Lesson Question API Endpoint
+    path('api/lessons/<int:lesson_id>/', get_lesson_questions, name='lesson_questions'),
+
     # 🔄 dj-rest-auth (optional)
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
 
-# ✅ Serve media files in development
+# ✅ Serve media files (e.g., icons, images) in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

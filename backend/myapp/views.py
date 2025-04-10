@@ -7,13 +7,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Lesson, Enrollment, Review
-from .serializers import UserSerializer, LessonSerializer
+from .models import UserProfile, Lesson, Enrollment, Review, Question
+from .serializers import (
+    UserSerializer,
+    LessonSerializer,
+    QuestionSerializer,
+)
 
-# ===========================================
+
 # 🔐 AUTHENTICATION
-# ===========================================
-
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
@@ -23,8 +25,11 @@ class SignupView(APIView):
         password = request.data.get("password")
         confirm_password = request.data.get("confirmPassword")
 
-        if not username or not email or not password:
+        if not all([username, email, password, confirm_password]):
             return Response({"error": "All fields are required."}, status=400)
+
+        if password != confirm_password:
+            return Response({"error": "Passwords do not match."}, status=400)
 
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already exists."}, status=400)
@@ -32,15 +37,12 @@ class SignupView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already exists."}, status=400)
 
-        try:
-            User.objects.create(
-                username=username,
-                email=email,
-                password=make_password(password)
-            )
-            return Response({"message": "User created successfully."}, status=201)
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+        user = User.objects.create(
+            username=username,
+            email=email,
+            password=make_password(password)
+        )
+        return Response({"message": "User created successfully."}, status=201)
 
 
 class CustomLoginView(APIView):
@@ -66,9 +68,8 @@ class CustomLoginView(APIView):
 
         return Response({"error": "Invalid credentials."}, status=401)
 
-# ===========================================
-# 👤 PROFILE
-# ===========================================
+
+# 👤 USER PROFILE
 
 def get_ordinal(n):
     return f"{n}{'th' if 11 <= n <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
@@ -83,7 +84,6 @@ class ProfileView(APIView):
         formatted_joined = f"{get_ordinal(joined.day)} {joined.strftime('%B %Y')}"
 
         enrolled_lessons = Lesson.objects.filter(enrollments__user=user).distinct()
-
         courses = [
             {
                 "title": lesson.title,
@@ -99,9 +99,43 @@ class ProfileView(APIView):
             "courses": courses
         })
 
-# ===========================================
+
+# 📘 LESSONS & QUESTIONS
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lessons_by_course(request):
+    course = request.GET.get('course')
+    if not course:
+        return Response({"error": "Course ID is required."}, status=400)
+
+    lessons = Lesson.objects.filter(title__icontains=course)
+    serializer = LessonSerializer(lessons, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_questions(request, lesson_id):
+    questions = Question.objects.filter(lesson_id=lesson_id)
+    serializer = QuestionSerializer(questions, many=True)
+    return Response(serializer.data)
+
+
+# 🆕 Fetch lesson with all its questions in a single call
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lesson_questions(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found."}, status=404)
+
+    serializer = LessonSerializer(lesson)
+    return Response(serializer.data)
+
+
 # 🛠️ ADMIN DASHBOARD
-# ===========================================
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -123,9 +157,8 @@ def admin_dashboard(request):
 
     return Response(data)
 
-# ===========================================
+
 # 👥 USER MANAGEMENT (Admin only)
-# ===========================================
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -140,16 +173,13 @@ def list_users(request):
 def create_user(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        try:
-            user = User.objects.create_user(
-                username=serializer.validated_data['username'],
-                email=serializer.validated_data['email'],
-                password=serializer.validated_data['password'],
-                is_staff=serializer.validated_data.get('is_staff', False)
-            )
-            return Response({'message': 'User created successfully'}, status=201)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
+        user = User.objects.create_user(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
+            password=serializer.validated_data['password'],
+            is_staff=serializer.validated_data.get('is_staff', False)
+        )
+        return Response({'message': 'User created successfully'}, status=201)
     return Response(serializer.errors, status=400)
 
 
@@ -187,9 +217,8 @@ def delete_user(request, user_id):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
-# ===========================================
+
 # ✏️ UPDATE PROFILE CREDENTIALS
-# ===========================================
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -201,7 +230,7 @@ def update_profile_credentials(request):
     current_password = data.get("current_password")
     new_password = data.get("new_password")
 
-    if not current_password or not new_password or not username:
+    if not all([username, current_password, new_password]):
         return Response({"error": "All fields are required."}, status=400)
 
     if not user.check_password(current_password):
@@ -215,18 +244,3 @@ def update_profile_credentials(request):
     user.save()
 
     return Response({"message": "Profile updated successfully."})
-
-# ===========================================
-# 📘 LESSON FILTER BY COURSE
-# ===========================================
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_lessons_by_course(request):
-    course_id = request.GET.get('course')
-    if not course_id:
-        return Response({"error": "Course ID is required."}, status=400)
-
-    lessons = Lesson.objects.filter(title__icontains=course_id)
-    serializer = LessonSerializer(lessons, many=True)
-    return Response(serializer.data)

@@ -18,6 +18,7 @@ import Frontend from './Pages/FrontendLearning/Frontend';
 import Backend from './Pages/BackendLearning/Backend';
 import DailyQuests from './Pages/DailyQuests';
 import LearnPage from './Pages/LearnPage';
+import LessonPage from './Components/LessonPage';
 
 // 👤 User Pages
 import ProfilePage from './Pages/ProfilePage';
@@ -96,6 +97,16 @@ function App() {
             </LearnLayout>
           }
         />
+
+        <Route
+          path="/lesson/:lessonId"
+          element={
+            <LearnLayout>
+              <LessonPage />
+            </LearnLayout>
+          }
+        />
+
         <Route
           path="/dailyquests"
           element={

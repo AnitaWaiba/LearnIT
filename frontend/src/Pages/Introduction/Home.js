@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./Home.module.css";
 import { FaCheck, FaLock } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 const allLessons = Array.from({ length: 30 }, (_, i) => ({
   id: i + 1,
@@ -16,6 +17,7 @@ const chunkLessons = (lessons, chunkSize = 5) => {
 };
 
 const Home = () => {
+  const navigate = useNavigate();
   const [progress, setProgress] = useState(2);
   const lessonChunks = chunkLessons(allLessons);
 
@@ -53,7 +55,7 @@ const Home = () => {
                     <div key={lesson.id} className={styles.lessonWrapper}>
                       <button
                         className={`${styles.lessonButton} ${buttonClass}`}
-                        onClick={() => handleLessonClick(lesson)}
+                        onClick={() => navigate(`/lesson/${lesson.id}`)}
                         disabled={!isUnlocked}
                       >
                         {isCompleted ? (

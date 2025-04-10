@@ -2,13 +2,12 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
-from .models import UserProfile
-from .models import Lesson
+
+from .models import UserProfile, Lesson, Question, Option
 
 # ==========================================
-# 🔐 Basic User Serializer for Admin/User Ops
+# 🔐 User Serializer (with create/update logic)
 # ==========================================
-
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
@@ -36,7 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         if password:
             user.password = make_password(password)
-
         user.save()
         return user
 
@@ -48,10 +46,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         if password:
             instance.password = make_password(password)
-
         instance.save()
         return instance
 
+# ==========================================
+# 👤 Profile Serializer (with courses & avatar)
+# ==========================================
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(source='profile.avatar', required=False)
     courses = serializers.SerializerMethodField()
@@ -61,22 +61,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'date_joined', 'avatar', 'courses']
 
     def update(self, instance, validated_data):
-        # Pop out nested profile data if present
         user_profile_data = validated_data.pop('profile', {})
 
-        # Update User model fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Update avatar in UserProfile
         profile, _ = UserProfile.objects.get_or_create(user=instance)
         avatar = user_profile_data.get('avatar')
-
         if avatar:
             profile.avatar = avatar
             profile.save()
-
         return instance
 
     def get_courses(self, obj):
@@ -90,6 +85,29 @@ class ProfileSerializer(serializers.ModelSerializer):
                 for lesson in profile.courses.all()
             ]
         return []
+
+# ==========================================
+# 🧩 Lesson → Questions → Options
+# ==========================================
+
+class OptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ['id', 'text', 'is_correct', 'match_pair']
+
+class QuestionSerializer(serializers.ModelSerializer):
+    options = OptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'text', 'type', 'hint', 'explanation', 'image', 'options']
+
+class LessonDetailSerializer(serializers.ModelSerializer):
+    questions = QuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'description', 'content', 'icon', 'questions', 'created_at']
 
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
