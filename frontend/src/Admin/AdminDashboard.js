@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./AdminDashboard.module.css";
 import AdminSidebar from "./AdminSidebar";
-import { getAdminDashboard } from "../utils/api"; // make sure this exists
+import { getAdminDashboard } from "../utils/api";
 
 const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState({

@@ -8,7 +8,7 @@ const AdminSidebar = () => {
       <h2>Admin Panel</h2>
       <ul>
         <li><Link to="/admin">Dashboard</Link></li>
-        <li><Link to="/lessons">Manage Lessons</Link></li>
+        <li><Link to="/managelessons">Manage Lessons</Link></li>
         <li><Link to="/manageusers">Manage Users</Link></li>
         <li><Link to="/">Logout</Link></li>
       </ul>

@@ -48,3 +48,5 @@ export const getCourseDetails = (slug) => api.get(`/courses/${slug}/`);
 export const getDailyQuests = () => api.get('/daily-quests/');
 
 export default api;
+
+export const getAdminDashboard = () => api.get('/admin/dashboard/');

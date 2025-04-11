@@ -1,0 +1,169 @@
+.gridLayout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: #e3eff4;
+}
+
+.sidebar {
+  background: #004d61;
+  padding: 20px 0;
+}
+
+.content {
+  padding: 40px;
+  background: #e3eff4;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 25px;
+  color: #004d61;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* ✅ Fixes the alignment and sizing issue */
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #aac8d0;
+  min-width: 280px;
+  flex: 1;
+  max-width: 500px;
+  height: 38px;
+}
+
+.searchIcon {
+  color: #aac8d0;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.searchBar input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 15px;
+  background: transparent;
+}
+
+.searchBar input::placeholder {
+  color: #7b8a99;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.searchBar input:focus::placeholder {
+  opacity: 0.4;
+}
+
+/* ✅ Button hugs content & aligns right */
+.addBtn {
+  background: #56c2d6;
+  color: white;
+  font-size: 14px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  align-self: flex-start;
+  height: 38px;
+}
+
+.addBtn:hover {
+  background-color: #3bb0c6;
+}
+
+.message {
+  padding: 12px;
+  background: #d9faff;
+  color: #004d61;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.tableWrapper {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.userTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.userTable th,
+.userTable td {
+  padding: 16px 18px;
+  font-size: 15px;
+  text-align: left;
+}
+
+.userTable th {
+  background: #56c2d6;
+  color: white;
+  font-weight: 600;
+}
+
+.userTable tbody tr:hover {
+  background: #f0f9ff;
+}
+
+.actionCell {
+  display: flex;
+  gap: 10px;
+}
+
+.editBtn,
+.deleteBtn {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.editBtn {
+  background: #297386;
+  color: white;
+}
+
+.editBtn:hover {
+  background: #004d61;
+}
+
+.deleteBtn {
+  background: #f44336;
+  color: white;
+}
+
+.deleteBtn:hover {
+  background: #d32f2f;
+}
+
+.noUsers {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+  font-size: 14px;
+}

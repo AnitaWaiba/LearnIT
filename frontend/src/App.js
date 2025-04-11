@@ -31,6 +31,7 @@ import Privacy from './Pages/Privacy';
 // 🛠️ Admin
 import AdminDashboard from './Admin/AdminDashboard';
 import ManageUsers from './Admin/ManageUsers';
+import ManageLesson from './Admin/ManageLesson';
 
 // 🧱 Layouts
 import LearnLayout from './Components/LearnLayout';
@@ -127,6 +128,7 @@ function App() {
         {/* 🛠️ Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manageusers" element={<ManageUsers />} />
+        <Route path="/managelessons" element={<ManageLesson />} />
 
         {/* 🚫 404 Not Found */}
         <Route
