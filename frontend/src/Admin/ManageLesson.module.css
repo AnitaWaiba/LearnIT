@@ -1,68 +1,138 @@
 .grid {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    height: 100vh;
-    background-color: #f7fbfc;
-  }
-  
-  .sidebar {
-    background-color: #ffffff;
-    padding: 20px;
-    border-right: 1px solid #e2e8f0;
-    overflow-y: auto;
-  }
-  
-  .main {
-    padding: 40px;
-    overflow-y: auto;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  }
-  
-  .form label {
-    font-weight: bold;
-    margin-top: 15px;
-  }
-  
-  .form input,
-  .form textarea {
-    padding: 10px;
-    font-size: 16px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-  }
-  
-  .form button {
-    margin-top: 20px;
-    padding: 12px;
-    background-color: #56c2d6;
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .form button:hover {
-    background-color: #3aa9bd;
-  }
-  
-  .success {
-    color: green;
-    margin-top: 10px;
-  }
-  
-  .error {
-    color: red;
-    margin-top: 10px;
-  }
-  
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  height: 100vh;
+  background-color: #f7fbfc;
+}
+
+.sidebar {
+  background-color: #ffffff;
+  padding: 20px;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+}
+
+.main {
+  padding: 40px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.headerButtons button {
+  padding: 10px 20px;
+  background-color: #38bdf8;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.headerButtons button:hover {
+  background-color: #0ea5e9;
+}
+
+.tablePlaceholder {
+  padding: 20px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #fffefc;
+  text-align: center;
+  color: #666;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 40px 30px 30px 30px;
+  border-radius: 12px;
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-right: 35px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #e2e8f0;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #444;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: #cbd5e1;
+  color: #222;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form label {
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.form input,
+.form textarea {
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.form button {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #56c2d6;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.form button:hover {
+  background-color: #3aa9bd;
+}

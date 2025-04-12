@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import UserProfile, Lesson, Enrollment, Review, Question
@@ -70,7 +71,6 @@ class CustomLoginView(APIView):
 
 
 # 👤 USER PROFILE
-
 def get_ordinal(n):
     return f"{n}{'th' if 11 <= n <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
@@ -101,7 +101,6 @@ class ProfileView(APIView):
 
 
 # 📘 LESSONS & QUESTIONS
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_lessons_by_course(request):
@@ -122,7 +121,6 @@ def get_questions(request, lesson_id):
     return Response(serializer.data)
 
 
-# 🆕 Fetch lesson with all its questions in a single call
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_lesson_questions(request, lesson_id):
@@ -135,8 +133,42 @@ def get_lesson_questions(request, lesson_id):
     return Response(serializer.data)
 
 
-# 🛠️ ADMIN DASHBOARD
+# ✅ NEW: Create Lesson from Admin UI (ManageLesson.js)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_lesson(request):
+    parser_classes = (MultiPartParser, FormParser)
+    title = request.data.get("title")
+    description = request.data.get("description", "")
+    content = request.data.get("content", "")
+    icon = request.FILES.get("icon")
 
+    if not title:
+        return Response({"error": "Title is required."}, status=400)
+
+    lesson = Lesson.objects.create(
+        title=title,
+        description=description,
+        content=content,
+        icon=icon
+    )
+    return Response({"message": "Lesson created successfully."}, status=201)
+
+
+# 📥 Enroll in Lesson
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def enroll_in_lesson(request, lesson_id):
+    user = request.user
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        Enrollment.objects.get_or_create(user=user, lesson=lesson)
+        return Response({"message": f"Enrolled in {lesson.title}"}, status=200)
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found."}, status=404)
+
+
+# 🛠️ ADMIN DASHBOARD
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_dashboard(request):
@@ -158,8 +190,7 @@ def admin_dashboard(request):
     return Response(data)
 
 
-# 👥 USER MANAGEMENT (Admin only)
-
+# 👥 USER MANAGEMENT
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def list_users(request):
@@ -218,8 +249,7 @@ def delete_user(request, user_id):
         return Response({'error': str(e)}, status=500)
 
 
-# ✏️ UPDATE PROFILE CREDENTIALS
-
+# 🔐 PROFILE CREDENTIAL UPDATE
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile_credentials(request):

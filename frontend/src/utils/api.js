@@ -44,6 +44,20 @@ export const sendMessage = (formData) => api.post('/contact/', formData);
 // ========== COURSE (optional) ==========
 export const getCourseDetails = (slug) => api.get(`/courses/${slug}/`);
 
+// ========== LESSONS ==========
+
+// Fetch all lessons for a course
+export const getLessonsByCourse = (course) => api.get(`/lessons/?course=${course}`);
+
+// Fetch all questions for a lesson
+export const getQuestions = (lessonId) => api.get(`/lessons/${lessonId}/questions/`);
+
+// Fetch lesson details + questions
+export const getLessonDetailsWithQuestions = (lessonId) => api.get(`/lesson-questions/${lessonId}/`);
+
+// Enroll in a lesson
+export const enrollInLesson = (lessonId) => api.post(`/enroll/${lessonId}/`);
+
 // ========== QUESTS ==========
 export const getDailyQuests = () => api.get('/daily-quests/');
 

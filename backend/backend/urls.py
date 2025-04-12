@@ -14,7 +14,8 @@ from myapp.views import (
     create_user,
     update_user,
     delete_user,
-    get_lesson_questions
+    get_lesson_questions,
+    create_lesson
 )
 
 from rest_framework_simplejwt.views import (
@@ -54,6 +55,9 @@ urlpatterns = [
     # 🔄 dj-rest-auth (optional)
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+
+    # 📘 Create lesson
+    path("api/lessons/create/", create_lesson, name="create_lesson"),
 ]
 
 # ✅ Serve media files (e.g., icons, images) in development
