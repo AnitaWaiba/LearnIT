@@ -53,10 +53,38 @@ export const getLessonsByCourse = (course) => api.get(`/lessons/?course=${course
 export const getQuestions = (lessonId) => api.get(`/lessons/${lessonId}/questions/`);
 
 // Fetch lesson details + questions
-export const getLessonDetailsWithQuestions = (lessonId) => api.get(`/lesson-questions/${lessonId}/`);
+export const getLessonDetailsWithQuestions = (lessonId) => {
+  return axios.get(`/api/lessons/${lessonId}/questions/`);
+};
 
 // Enroll in a lesson
 export const enrollInLesson = (lessonId) => api.post(`/enroll/${lessonId}/`);
+
+// Add a new question to a specific lesson
+export const addQuestionToLesson = (lessonId, questionData) => {
+  return api.post(`/lessons/${lessonId}/add-q/`, questionData);
+};
+
+export const getAllQuestions = async () => {
+  const res = await fetch('http://localhost:8000/api/questions/', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`
+    }
+  });
+  return res.json();
+};
+
+// Fetch all questions for a specific lesson
+export const fetchQuestionsByLesson = (lessonId) =>
+  api.get(`/lessons/${lessonId}/questions/`);
+
+// Update a specific question
+export const updateQuestionById = (questionId, updatedData) =>
+  api.put(`/questions/${questionId}/`, updatedData);
+
+// Delete a specific question
+export const deleteQuestionById = (questionId) =>
+  api.delete(`/questions/${questionId}/`);
 
 // ========== QUESTS ==========
 export const getDailyQuests = () => api.get('/daily-quests/');

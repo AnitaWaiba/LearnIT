@@ -7,7 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', password: '', role: 'user' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -33,7 +33,13 @@ function Login() {
         localStorage.setItem('refresh_token', refresh);
 
         toast.success('Login successful!');
-        setTimeout(() => navigate('/option'), 1500);
+        setTimeout(() => {
+          if (formData.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/option');
+          }
+        }, 1500);
       } else {
         toast.error('Unexpected server response. Please try again.');
       }
@@ -80,6 +86,18 @@ function Login() {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
+          <label htmlFor="role">Login As</label>
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className={styles.dropdown}
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
 
           <div className={styles.forgotPassword}>
             <a href="/forgot-password">Forgot Password?</a>

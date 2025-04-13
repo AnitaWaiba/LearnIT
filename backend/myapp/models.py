@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # ===========================================
-# ✅ LESSON MODEL (with icon and question support)
+# ✅ LESSON MODEL
 # ===========================================
 class Lesson(models.Model):
     title = models.CharField(max_length=255)
@@ -43,7 +43,7 @@ class Question(models.Model):
 
 
 # ===========================================
-# ✅ OPTION MODEL
+# ✅ OPTION MODEL (supports MCQ + Matching)
 # ===========================================
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
