@@ -62,6 +62,20 @@
   color: #004d61;
 }
 
+/* ✅ New styles for enrolled courses */
+.enrolled {
+  border: 2px solid #00c853;
+  box-shadow: 0 0 10px #00c85388;
+}
+
+.status {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #00c853;
+}
+
 @media (max-width: 768px) {
   .cards {
     flex-direction: column;

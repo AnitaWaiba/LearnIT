@@ -136,9 +136,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ==============================================================================
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
     "http://localhost:3000",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = False
 
 # ==============================================================================
 # 🛡 Django REST Framework + JWT
@@ -170,9 +175,8 @@ REST_USE_JWT = True  # Enable JWT support for dj-rest-auth
 # 📧 Allauth Configuration
 # ==============================================================================
 
-ACCOUNT_AUTHENTICATION_METHOD = 'username'  # use 'username_email' for both
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # Set to 'mandatory' if using email confirmation
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 

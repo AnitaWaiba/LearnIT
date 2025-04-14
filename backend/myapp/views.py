@@ -7,11 +7,18 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import re, traceback
 
-from .models import UserProfile, Lesson, Enrollment, Review, Question
-from .serializers import UserSerializer, LessonSerializer, QuestionSerializer
+from .models import UserProfile, Course, Lesson, Question, Option, Enrollment, Review
+from .serializers import (
+    UserSerializer, CourseSerializer, LessonSerializer,
+    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer
+)
 
 # ---------------- AUTH ----------------
+@method_decorator(csrf_exempt, name='dispatch')
 class SignupView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -29,6 +36,13 @@ class SignupView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already exists."}, status=400)
 
+        # 🔐 Password strength rule
+        password_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        if not re.match(password_regex, password):
+            return Response({
+                "error": "Password must be at least 8 characters long and include letters, numbers, and special characters."
+            }, status=400)
+        
         user = User.objects.create(
             username=username,
             email=email,
@@ -36,14 +50,14 @@ class SignupView(APIView):
         )
         return Response({"message": "User created successfully."}, status=201)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         identifier = request.data.get("username")
         password = request.data.get("password")
         if not identifier or not password:
-            return Response({"error": "Username/email and password are required."}, status=400)
+            return Response({"error": "Username and password are required."}, status=400)
         user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
         if user and check_password(password, user.password):
             refresh = RefreshToken.for_user(user)
@@ -56,23 +70,56 @@ class CustomLoginView(APIView):
 
 
 # ---------------- PROFILE ----------------
+def get_day_suffix(day):
+    if 11 <= day <= 13:
+        return 'th'
+    return {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        user = request.user
-        joined = user.date_joined
-        formatted_joined = f"{joined.day}{['th', 'st', 'nd', 'rd'][min(joined.day % 10, 3)]} {joined.strftime('%B %Y')}"
-        enrolled_lessons = Lesson.objects.filter(enrollments__user=user).distinct()
-        courses = [
-            {"title": l.title, "icon": request.build_absolute_uri(l.icon.url) if l.icon else None}
-            for l in enrolled_lessons
-        ]
-        return Response({
-            "name": user.first_name or user.username,
-            "username": user.username,
-            "joined": formatted_joined,
-            "courses": courses
-        })
+        try:
+            user = request.user
+            print("🧑 USER:", user)
+
+            joined = user.date_joined
+            print("📅 Joined:", joined)
+            suffix = get_day_suffix(joined.day)
+            formatted_joined = f"{joined.day}{suffix} {joined.strftime('%B %Y')}"
+
+            enrolled_courses = Course.objects.filter(course_enrollments__user=user).distinct()
+            print("📘 Enrolled courses count:", enrolled_courses.count())
+
+            courses = []
+            for course in enrolled_courses:
+                print("➡️ Course:", course.title)
+                try:
+                    if course.icon and hasattr(course.icon, 'url'):
+                        icon_url = request.build_absolute_uri(course.icon.url)
+                    else:
+                        icon_url = None
+                except Exception as e:
+                    print(f"⚠️ ICON LOAD FAILED for '{course.title}':", e)
+                    icon_url = None
+
+                courses.append({
+                    "title": course.title,
+                    "icon": icon_url
+                })
+
+            return Response({
+                "name": user.first_name or user.username,
+                "username": user.username,
+                "joined": formatted_joined,
+                "courses": courses
+            })
+
+        except Exception as e:
+            print("🔥 CRITICAL PROFILE ERROR:")
+            traceback.print_exc()  # 👈 shows full Python error in terminal
+            return Response({"error": "Internal Server Error", "details": str(e)}, status=500)
+
 
 
 @api_view(['PUT'])
@@ -95,11 +142,44 @@ def update_profile_credentials(request):
     return Response({"message": "Profile updated successfully."})
 
 
+# ---------------- COURSES ----------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_courses(request):
+    courses = Course.objects.all()
+    serializer = CourseSerializer(courses, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_course(request):
+    title = request.data.get("title")
+    description = request.data.get("description", "")
+    content = request.data.get("content", "")
+    icon = request.FILES.get("icon")
+    if not title:
+        return Response({"error": "Title is required"}, status=400)
+
+    course = Course.objects.create(
+        title=title,
+        description=description,
+        content=content,
+        icon=icon
+    )
+    return Response({"message": "Course created successfully"}, status=201)
+
+
 # ---------------- LESSONS ----------------
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_all_lessons(request):
-    lessons = Lesson.objects.all()
+def get_lessons_by_course(request, course_id):
+    try:
+        course = Course.objects.get(pk=course_id)
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found"}, status=404)
+
+    lessons = Lesson.objects.filter(course=course)
     serializer = LessonSerializer(lessons, many=True)
     return Response(serializer.data)
 
@@ -107,23 +187,28 @@ def get_all_lessons(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_lesson(request):
-    parser_classes = (MultiPartParser, FormParser)
+    course_id = request.data.get("course_id")
     title = request.data.get("title")
-    description = request.data.get("description", "")
-    content = request.data.get("content", "")
-    icon = request.FILES.get("icon")
-    if not title:
-        return Response({"error": "Title is required."}, status=400)
-    lesson = Lesson.objects.create(title=title, description=description, content=content, icon=icon)
-    return Response({"message": "Lesson created successfully."}, status=201)
+    content = request.data.get("content")
+
+    if not all([course_id, title]):
+        return Response({"error": "Course and title are required"}, status=400)
+
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return Response({"error": "Invalid course"}, status=404)
+
+    Lesson.objects.create(course=course, title=title, content=content)
+    return Response({"message": "Lesson created successfully"}, status=201)
 
 
 # ---------------- QUESTIONS ----------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def add_question_to_lesson(request, lesson_id):  # ✅ accept lesson_id
+def add_question_to_lesson(request, lesson_id):
     try:
-        lesson = Lesson.objects.get(id=lesson_id)  # ✅ use from URL, not request.data
+        lesson = Lesson.objects.get(id=lesson_id)
     except Lesson.DoesNotExist:
         return Response({"error": "Lesson not found."}, status=404)
 
@@ -136,7 +221,6 @@ def add_question_to_lesson(request, lesson_id):  # ✅ accept lesson_id
     if not question_text or not question_type:
         return Response({"error": "Text and Type are required."}, status=400)
 
-    # Create the question
     question = Question.objects.create(
         lesson=lesson,
         text=question_text,
@@ -145,7 +229,6 @@ def add_question_to_lesson(request, lesson_id):  # ✅ accept lesson_id
         explanation=explanation
     )
 
-    # Create associated options
     if question_type == "mcq":
         for opt in options_data:
             question.options.create(
@@ -153,10 +236,7 @@ def add_question_to_lesson(request, lesson_id):  # ✅ accept lesson_id
                 is_correct=opt.get("is_correct", False)
             )
     elif question_type == "fill":
-        question.options.create(
-            text=options_data[0].get("text", ""),
-            is_correct=True
-        )
+        question.options.create(text=options_data[0].get("text", ""), is_correct=True)
     elif question_type == "match":
         for opt in options_data:
             question.options.create(
@@ -166,34 +246,35 @@ def add_question_to_lesson(request, lesson_id):  # ✅ accept lesson_id
 
     return Response({"message": "✅ Question added successfully."}, status=201)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_lesson_questions(request, lesson_id):
     try:
         lesson = Lesson.objects.get(pk=lesson_id)
     except Lesson.DoesNotExist:
-        return Response({"error": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Lesson not found."}, status=404)
 
     questions = Question.objects.filter(lesson=lesson).prefetch_related("options")
     serializer = QuestionSerializer(questions, many=True)
-
     return Response({
         "lesson": LessonSerializer(lesson).data,
         "questions": serializer.data
-    }, status=status.HTTP_200_OK)
+    })
+
 
 # ---------------- ENROLLMENT ----------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def enroll_in_lesson(request, lesson_id):
+def enroll_in_course(request, course_id):
     user = request.user
     try:
-        lesson = Lesson.objects.get(id=lesson_id)
-        Enrollment.objects.get_or_create(user=user, lesson=lesson)
-        return Response({"message": f"Enrolled in {lesson.title}"}, status=200)
-    except Lesson.DoesNotExist:
-        return Response({"error": "Lesson not found."}, status=404)
-
+        course = Course.objects.get(id=course_id)
+        Enrollment.objects.get_or_create(user=user, course=course)
+        return Response({"message": f"Enrolled in {course.title}"}, status=200)
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found"}, status=404)
+    
 
 # ---------------- ADMIN ----------------
 @api_view(['GET'])
@@ -203,7 +284,7 @@ def admin_dashboard(request):
         return Response({"error": "Admin access only."}, status=403)
     data = {
         "totalUsers": User.objects.count(),
-        "totalCourses": Lesson.objects.count(),
+        "totalCourses": Course.objects.count(),
         "totalEnrollments": Enrollment.objects.count(),
         "completionRate": 85,
         "activityLogs": [{"date": "2024-03-01", "action": "User signed up", "user": "JohnDoe"}],
@@ -265,20 +346,6 @@ def delete_user(request, user_id):
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=404)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_lesson_questions(request, lesson_id):
-    try:
-        lesson = Lesson.objects.get(id=lesson_id)
-    except Lesson.DoesNotExist:
-        return Response({"error": "Lesson not found."}, status=404)
-
-    questions = Question.objects.filter(lesson=lesson)
-    serializer = QuestionSerializer(questions, many=True)
-    return Response({
-        "lesson": LessonSerializer(lesson).data,
-        "questions": serializer.data
-    })
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -294,7 +361,6 @@ def update_question_by_id(request, question_id):
     question.explanation = request.data.get("explanation", question.explanation)
     question.save()
 
-    # Replace options
     options_data = request.data.get("options", [])
     question.options.all().delete()
 
@@ -306,6 +372,7 @@ def update_question_by_id(request, question_id):
         )
 
     return Response({"message": "Question updated successfully"})
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # ===========================================
-# ✅ LESSON MODEL
+# ✅ Course MODEL
 # ===========================================
-class Lesson(models.Model):
+class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     content = models.TextField(blank=True)
@@ -19,6 +19,18 @@ class Lesson(models.Model):
     def __str__(self):
         return self.title
 
+# ===========================================
+# ✅ Lesson MODEL
+# ===========================================
+class Lesson(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    content = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.course.title})"
 
 # ===========================================
 # ✅ QUESTION MODEL (MCQ, Fill, Match, Image)
@@ -31,7 +43,7 @@ class Question(models.Model):
         ('image', 'Image Based'),
     ]
 
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='questions')
+    lesson = models.ForeignKey('Lesson', on_delete=models.CASCADE, related_name='questions')
     type = models.CharField(max_length=10, choices=QUESTION_TYPES)
     text = models.TextField()
     image = models.ImageField(upload_to='question_images/', blank=True, null=True)
@@ -61,7 +73,7 @@ class Option(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    courses = models.ManyToManyField(Lesson, related_name='user_profiles')
+    courses = models.ManyToManyField(Course, related_name='user_profiles')
     current_streak = models.PositiveIntegerField(default=0)
     last_completed_date = models.DateField(null=True, blank=True)
 
@@ -74,30 +86,29 @@ class UserProfile(models.Model):
 # ===========================================
 class Enrollment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'lesson')
+        unique_together = ('user', 'course')
         ordering = ['-enrolled_at']
 
     def __str__(self):
-        return f"{self.user.username} enrolled in {self.lesson.title}"
-
+        return f"{self.user.username} enrolled in {self.course.title}"
 
 # ===========================================
 # ✅ REVIEW MODEL
 # ===========================================
 class Review(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='reviews')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     rating = models.PositiveIntegerField()
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'lesson')
+        unique_together = ('user', 'course')
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Review by {self.user.username} on {self.lesson.title} ({self.rating}/5)"
+        return f"Review by {self.user.username} on {self.course.title} ({self.rating}/5)"

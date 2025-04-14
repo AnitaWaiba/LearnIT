@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
-from .models import UserProfile, Lesson, Question, Option
+from .models import UserProfile, Course, Lesson, Question, Option
 
 # ==========================
 # 🔐 User Serializer
@@ -39,7 +39,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 # ==========================
 # 👤 Profile Serializer
 # ==========================
@@ -63,19 +62,18 @@ class ProfileSerializer(serializers.ModelSerializer):
             profile.avatar = avatar
             profile.save()
         return instance
-
+    
     def get_courses(self, obj):
         profile = getattr(obj, 'profile', None)
         if profile and profile.courses.exists():
             return [
                 {
-                    'name': lesson.title,
-                    'icon': lesson.icon.url if lesson.icon else None
+                    'title': course.title,
+                    'icon': course.icon.url if course.icon else None
                 }
-                for lesson in profile.courses.all()
+                for course in profile.courses.all()
             ]
         return []
-
 
 # ==========================
 # 🧩 Option Serializer
@@ -84,7 +82,6 @@ class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
         fields = ['id', 'text', 'is_correct', 'match_pair']
-
 
 # ==========================
 # ❓ Question Serializer with nested Options
@@ -115,15 +112,31 @@ class QuestionSerializer(serializers.ModelSerializer):
                 Option.objects.create(question=instance, **option)
         return instance
 
+# ==========================
+# 📚 Course Serializer
+# ==========================
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'content', 'icon', 'created_at']
 
 # ==========================
-# 📚 Lesson Serializer
+# 📝 Lesson Serializer
 # ==========================
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'description', 'content', 'icon', 'created_at']
+        fields = ['id', 'course', 'title', 'content', 'created_at']
 
+# ==========================
+# 📘 Course Detail Serializer (course + lessons)
+# ==========================
+class CourseDetailSerializer(serializers.ModelSerializer):
+    lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'content', 'icon', 'lessons', 'created_at']
 
 # ==========================
 # 📘 Lesson Detail with nested questions
@@ -133,4 +146,4 @@ class LessonDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'description', 'content', 'icon', 'questions', 'created_at']
+        fields = ['id', 'course', 'title', 'content', 'questions', 'created_at']

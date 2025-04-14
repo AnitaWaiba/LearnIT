@@ -26,6 +26,8 @@ function Login() {
         password: formData.password,
       });
 
+      console.log("🔐 Login response:", response.data);
+      
       const { access, refresh } = response.data;
 
       if (access && refresh) {

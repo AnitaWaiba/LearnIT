@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './StatusBar.module.css';
 import { useCourseStore } from '../Store/courseStore';
+import { enrollInCourse } from '../utils/api';
 
-// 📦 Course Icons from /src/Image
+// 📦 Icons
 import introIcon from '../Image/intro.png';
 import frontendIcon from '../Image/frontend1.png';
 import backendIcon from '../Image/backend1.png';
 
+// 🎓 Local Course List (with backend IDs)
 const courseIconMap = {
   'Introduction to Computer': introIcon,
   'Frontend Development': frontendIcon,
@@ -15,32 +17,45 @@ const courseIconMap = {
 };
 
 const defaultCourses = [
-  { id: 'intro', name: 'Introduction to Computer', path: '/home' },
-  { id: 'frontend', name: 'Frontend Development', path: '/frontend' },
-  { id: 'backend', name: 'Backend Development', path: '/backend' },
+  { id: 'intro', backendId: 1, name: 'Introduction to Computer', path: '/home' },
+  { id: 'frontend', backendId: 2, name: 'Frontend Development', path: '/frontend' },
+  { id: 'backend', backendId: 3, name: 'Backend Development', path: '/backend' },
 ];
 
 const StatusBar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
 
-  // 🧠 Zustand global store usage
+  // Zustand state
   const selectedCourse = useCourseStore((state) => state.selectedCourse);
   const setSelectedCourse = useCourseStore((state) => state.setSelectedCourse);
 
-  const handleSelectCourse = (course) => {
-    setSelectedCourse(course);
-    setDropdownOpen(false);
-    navigate(course.path);
+  const handleSelectCourse = async (course) => {
+    try {
+      setEnrolling(true);
+      await enrollInCourse(course.backendId);
+      setSelectedCourse(course);
+      setDropdownOpen(false);
+      navigate(course.path);
+    } catch (error) {
+      console.error('❌ Enrollment failed:', error.response?.data || error.message);
+    } finally {
+      setEnrolling(false);
+    }
   };
 
   return (
     <div className={styles.statusContainer}>
       <div className={styles.statusBar}>
-        <div className={styles.courseSelector} onClick={() => setDropdownOpen(!dropdownOpen)}>
+        <div
+          className={styles.courseSelector}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          title="Switch Course"
+        >
           <img
-            src={courseIconMap[selectedCourse.name]}
-            alt={selectedCourse.name}
+            src={courseIconMap[selectedCourse?.name] || introIcon}
+            alt={selectedCourse?.name}
             className={styles.courseIcon}
           />
         </div>
@@ -56,9 +71,7 @@ const StatusBar = () => {
           {defaultCourses.map((course) => (
             <div
               key={course.id}
-              className={`${styles.dropdownItem} ${
-                course.id === selectedCourse.id ? styles.active : ''
-              }`}
+              className={`${styles.dropdownItem} ${course.id === selectedCourse?.id ? styles.active : ''}`}
               onClick={() => handleSelectCourse(course)}
             >
               <img
@@ -67,6 +80,7 @@ const StatusBar = () => {
                 className={styles.dropdownIcon}
               />
               <span>{course.name}</span>
+              {enrolling && course.id === selectedCourse?.id && <span className={styles.enrolling}>...</span>}
             </div>
           ))}
         </div>

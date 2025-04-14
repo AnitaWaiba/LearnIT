@@ -28,8 +28,15 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match.');
+      return;
+    }
+
+    if (!strongPasswordRegex.test(formData.password)) {
+      toast.error('Password must be at least 8 characters and include letters, numbers, and special characters.');
       return;
     }
 
@@ -56,6 +63,7 @@ function Signup() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className={styles.signupPage}>

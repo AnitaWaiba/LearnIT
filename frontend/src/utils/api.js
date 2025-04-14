@@ -1,22 +1,19 @@
 import axios from 'axios';
+import axiosInstance from './axiosConfig';
 
-const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Adjust if deploying elsewhere
-});
+const api = axiosInstance;
 
-// ✅ Automatically attach access token to private requests only
+// ✅ Automatically attach access token (with debug logs)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
-
-    // Skip token for public routes
-    const isPublicRoute = config.url.includes('/signup') || config.url.includes('/login');
+    const isPublicRoute = ['/signup', '/login'].some((route) => config.url.includes(route));
 
     if (token && !isPublicRoute) {
       config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('🛡️ Token added to request:', token);
+      console.log('🛡️ Token attached:', token);
     } else if (isPublicRoute) {
-      console.log('🟢 Public route, no token attached:', config.url);
+      console.log('🟢 Public route, no token needed:', config.url);
     }
 
     return config;
@@ -24,71 +21,71 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+//
 // ========== AUTH ==========
 export const loginUser = (credentials) => api.post('/login/', credentials);
 export const signupUser = (data) => api.post('/signup/', data);
-export const logoutUser = () => api.post('/logout/'); // If implemented
+export const logoutUser = () => {
+  localStorage.removeItem('access_token');
+  return Promise.resolve({ message: 'Logged out locally' });
+};
 
+//
 // ========== PROFILE ==========
 export const getProfile = () => api.get('/profile/');
-export const updateProfile = (data) => api.put('/profile/', data);
+export const updateProfile = (data) => api.put('/profile/update/', data);
 
+//
 // ========== ADMIN ==========
-export const getAllUsers = () => api.get('/users/');
-export const deleteUser = (userId) => api.delete(`/users/${userId}/`);
-export const updateUser = (userId, data) => api.put(`/users/${userId}/`, data);
+export const getAdminDashboard = () => api.get('/admin/dashboard/');
+export const getAllUsers = () => api.get('/admin/users/');
+export const deleteUser = (userId) => api.delete(`/admin/users/${userId}/delete/`);
+export const updateUser = (userId, data) => api.put(`/admin/users/${userId}/update/`, data);
 
+//
 // ========== CONTACT ==========
-export const sendMessage = (formData) => api.post('/contact/', formData);
+export const sendMessage = (formData) => api.post('/contact/', formData); // Make sure this endpoint exists
 
-// ========== COURSE (optional) ==========
-export const getCourseDetails = (slug) => api.get(`/courses/${slug}/`);
+//
+// ========== COURSES ==========
+export const getAllCourses = () => api.get('/courses/');
+export const enrollInCourse = (courseId) =>
+  api.post(`/courses/${courseId}/enroll/`);
+export const createCourse = (formData) => api.post('/courses/create/', formData);
 
+//
 // ========== LESSONS ==========
+export const getLessonsByCourse = (courseId) => api.get(`/lessons/by-course/${courseId}/`);
+export const getAllLessons = () => api.get('/lessons/');
+export const createLesson = (formData) => api.post('/lessons/create/', formData);
 
-// Fetch all lessons for a course
-export const getLessonsByCourse = (course) => api.get(`/lessons/?course=${course}`);
+// ✅ Lesson detail + questions combined
+export const getLessonDetailsWithQuestions = (lessonId) =>
+  api.get(`/lessons/${lessonId}/questions/`);
 
-// Fetch all questions for a lesson
-export const getQuestions = (lessonId) => api.get(`/lessons/${lessonId}/questions/`);
+//
+// ========== QUESTIONS ==========
+export const addQuestionToLesson = (lessonId, data) =>
+  api.post(`/lessons/${lessonId}/add-q/`, data);
 
-// Fetch lesson details + questions
-export const getLessonDetailsWithQuestions = (lessonId) => {
-  return axios.get(`/api/lessons/${lessonId}/questions/`);
-};
+export const updateQuestionById = (questionId, data) =>
+  api.put(`/questions/${questionId}/update/`, data);
 
-// Enroll in a lesson
-export const enrollInLesson = (lessonId) => api.post(`/enroll/${lessonId}/`);
+export const deleteQuestionById = (questionId) =>
+  api.delete(`/questions/${questionId}/delete/`);
 
-// Add a new question to a specific lesson
-export const addQuestionToLesson = (lessonId, questionData) => {
-  return api.post(`/lessons/${lessonId}/add-q/`, questionData);
-};
-
-export const getAllQuestions = async () => {
-  const res = await fetch('http://localhost:8000/api/questions/', {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('access_token')}`
-    }
-  });
-  return res.json();
-};
-
-// Fetch all questions for a specific lesson
+// ✅ All questions for a lesson
 export const fetchQuestionsByLesson = (lessonId) =>
   api.get(`/lessons/${lessonId}/questions/`);
 
-// Update a specific question
-export const updateQuestionById = (questionId, updatedData) =>
-  api.put(`/questions/${questionId}/`, updatedData);
+// ✅ All questions for a course (NEW – if you implement it on backend)
+export const fetchQuestionsByCourse = (courseId) =>
+  api.get(`/courses/${courseId}/questions/`); // Make sure to add this endpoint
 
-// Delete a specific question
-export const deleteQuestionById = (questionId) =>
-  api.delete(`/questions/${questionId}/`);
-
+//
 // ========== QUESTS ==========
 export const getDailyQuests = () => api.get('/daily-quests/');
 
+//
+// ========== EXPORT DEFAULT ==========
 export default api;
-
-export const getAdminDashboard = () => api.get('/admin/dashboard/');

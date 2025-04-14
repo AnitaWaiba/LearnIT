@@ -18,6 +18,7 @@ import Frontend from './Pages/FrontendLearning/Frontend';
 import Backend from './Pages/BackendLearning/Backend';
 import DailyQuests from './Pages/DailyQuests';
 import LearnPage from './Pages/LearnPage';
+import LessonList from './Components/LessonList'; // ✅ New lesson listing component
 import LessonPage from './Components/LessonPage';
 
 // 👤 User Pages
@@ -42,21 +43,28 @@ function App() {
 
   useEffect(() => {
     const fetchCourses = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.warn("🚫 No token found, skipping profile fetch");
+        return;
+      }
+
       try {
         const response = await getProfile();
         setCourses(response.data.courses || []);
       } catch (error) {
-        console.error('Failed to load profile courses', error);
+        console.error('❌ Failed to load profile courses', error);
       }
     };
 
     fetchCourses();
   }, [setCourses]);
 
+
   return (
     <Router>
       <Routes>
-        {/* 🌐 Public */}
+        {/* 🌐 Public Routes */}
         <Route path="/" element={<OpeningPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
@@ -98,7 +106,14 @@ function App() {
             </LearnLayout>
           }
         />
-
+        <Route
+          path="/lessons"
+          element={
+            <LearnLayout>
+              <LessonList />
+            </LearnLayout>
+          }
+        />
         <Route
           path="/lesson/:lessonId"
           element={
@@ -117,7 +132,7 @@ function App() {
           }
         />
 
-        {/* 👤 User Pages */}
+        {/* 👤 User Routes */}
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit" element={<EditProfile />} />
         <Route path="/settings/*" element={<SettingsPage />} />
@@ -125,12 +140,12 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
 
-        {/* 🛠️ Admin */}
+        {/* 🛠️ Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manageusers" element={<ManageUsers />} />
         <Route path="/managelessons" element={<ManageLesson />} />
 
-        {/* 🚫 404 Not Found */}
+        {/* ❌ 404 Route */}
         <Route
           path="*"
           element={
