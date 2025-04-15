@@ -1,301 +1,317 @@
 import React, { useEffect, useState } from 'react';
 import styles from './ManageLesson.module.css';
-import AdminSidebar from './AdminSidebar';
 import {
-  addQuestionToLesson,
+  getAllCourses,
+  getLessonsByCourse,
+  createLesson,
+  updateLesson,
+  deleteLesson,
   fetchQuestionsByLesson,
-  deleteQuestionById,
-  updateQuestionById
+  addQuestionToLesson,
+  updateQuestionById,
+  deleteQuestionById
 } from '../utils/api';
+import AdminSidebar from './AdminSidebar';
 
 function ManageLesson() {
+  const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const [selectedLessonId, setSelectedLessonId] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [openLessonIds, setOpenLessonIds] = useState([]);
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedLessonId, setSelectedLessonId] = useState('');
+
+  const [showLessonModal, setShowLessonModal] = useState(false);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [editingLesson, setEditingLesson] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // Question form fields
-  const [lessonId, setLessonId] = useState('');
+  const [lessonTitle, setLessonTitle] = useState('');
+  const [lessonContent, setLessonContent] = useState('');
+
   const [questionText, setQuestionText] = useState('');
   const [questionType, setQuestionType] = useState('mcq');
-  const [options, setOptions] = useState(['', '', '', '']);
-  const [correctAnswer, setCorrectAnswer] = useState('');
-  const [fillAnswer, setFillAnswer] = useState('');
-  const [matchPairs, setMatchPairs] = useState([{ left: '', right: '' }]);
-  const [hint, setHint] = useState('');
-  const [explanation, setExplanation] = useState('');
+  const [questionHint, setQuestionHint] = useState('');
+  const [questionExplanation, setQuestionExplanation] = useState('');
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    fetch('http://localhost:8000/api/lessons/', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setLessons(Array.isArray(data) ? data : []))
-      .catch(err => console.error('Failed to load lessons', err));
+    getAllCourses().then(setCourses);
   }, []);
 
   useEffect(() => {
-    if (selectedLessonId) {
-      fetchQuestionsByLesson(selectedLessonId)
-        .then(setQuestions)
-        .catch(err => {
-          console.error("Failed to fetch questions", err);
-          setQuestions([]);
-        });
+    if (questionType === 'mcq') {
+      setOptions([
+        { text: '', is_correct: false },
+        { text: '', is_correct: false },
+        { text: '', is_correct: false },
+        { text: '', is_correct: false }
+      ]);
+    } else if (questionType === 'fill') {
+      setOptions([{ text: '', is_correct: true }]);
+    } else if (questionType === 'match') {
+      setOptions([{ text: '', match_pair: '' }]);
     }
-  }, [selectedLessonId]);
+  }, [questionType]);
 
-  const resetForm = () => {
-    setLessonId('');
-    setQuestionText('');
-    setQuestionType('mcq');
-    setOptions(['', '', '', '']);
-    setCorrectAnswer('');
-    setFillAnswer('');
-    setMatchPairs([{ left: '', right: '' }]);
-    setHint('');
-    setExplanation('');
-    setEditingQuestion(null);
+  const loadLessons = (courseId) => {
+    setSelectedCourseId(courseId);
+    setLessons([]);
+    setQuestions([]);
+    getLessonsByCourse(courseId).then(setLessons);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const loadQuestions = (lessonId) => {
+    fetchQuestionsByLesson(lessonId).then(fetched => {
+      setQuestions(prev => {
+        const others = prev.filter(q => q.lesson !== lessonId);
+        return [...others, ...fetched.map(q => ({ ...q, lesson: lessonId }))];
+      });
+    });
+  };
+
+  const toggleLessonOpen = (lessonId) => {
+    if (openLessonIds.includes(lessonId)) {
+      setOpenLessonIds(prev => prev.filter(id => id !== lessonId));
+    } else {
+      setOpenLessonIds(prev => [...prev, lessonId]);
+      loadQuestions(lessonId);
+    }
+  };
+
+  const handleAddOrEditLesson = async () => {
+    const payload = { title: lessonTitle, content: lessonContent, course_id: selectedCourseId };
+    editingLesson ? await updateLesson(editingLesson.id, payload) : await createLesson(payload);
+    setShowLessonModal(false);
+    setEditingLesson(null);
+    setLessonTitle('');
+    setLessonContent('');
+    loadLessons(selectedCourseId);
+  };
+
+  const handleDeleteLesson = async (id) => {
+    await deleteLesson(id);
+    setConfirmDelete(null);
+    loadLessons(selectedCourseId);
+  };
+
+  const handleAddOrEditQuestion = async () => {
     const payload = {
       text: questionText,
       type: questionType,
-      hint,
-      explanation,
+      hint: questionHint,
+      explanation: questionExplanation,
+      options,
     };
+    editingQuestion
+      ? await updateQuestionById(editingQuestion.id, payload)
+      : await addQuestionToLesson(selectedLessonId, payload);
 
-    if (questionType === 'mcq') {
-      payload.options = options.map((opt, idx) => ({
-        text: opt,
-        is_correct: idx === parseInt(correctAnswer),
-      }));
-    } else if (questionType === 'fill') {
-      payload.options = [{ text: fillAnswer, is_correct: true }];
-    } else if (questionType === 'match') {
-      payload.options = matchPairs.map(pair => ({
-        text: pair.left,
-        match_pair: pair.right
-      }));
-    }
-
-    try {
-      if (editingQuestion) {
-        await updateQuestionById(editingQuestion.id, payload);
-        alert("✅ Question updated");
-      } else {
-        await addQuestionToLesson(lessonId, payload); // use selected lessonId from form
-        alert("✅ Question added");
-      }
-      setShowAddModal(false);
-      setShowEditModal(false);
-      resetForm();
-      const updated = await fetchQuestionsByLesson(selectedLessonId);
-      setQuestions(updated);
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("❌ Submission failed");
-    }
+    setShowQuestionModal(false);
+    setEditingQuestion(null);
+    setQuestionText('');
+    setQuestionHint('');
+    setQuestionExplanation('');
+    setQuestionType('mcq');
+    loadQuestions(selectedLessonId);
   };
 
-  const openEditModal = (question) => {
-    setEditingQuestion(question);
-    setLessonId(question.lesson || selectedLessonId); // Fallback to selected filter lesson
-    setQuestionText(question.text);
-    setQuestionType(question.type);
-    setHint(question.hint || '');
-    setExplanation(question.explanation || '');
-    if (question.type === 'mcq') {
-      setOptions(question.options.map(opt => opt.text));
-      const correctIdx = question.options.findIndex(opt => opt.is_correct);
-      setCorrectAnswer(String(correctIdx));
-    } else if (question.type === 'fill') {
-      setFillAnswer(question.options[0]?.text || '');
-    } else if (question.type === 'match') {
-      setMatchPairs(question.options.map(opt => ({ left: opt.text, right: opt.match_pair })));
-    }
-    setShowEditModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this question?")) {
-      try {
-        await deleteQuestionById(id);
-        setQuestions(questions.filter(q => q.id !== id));
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("❌ Deletion failed");
-      }
-    }
+  const handleDeleteQuestion = async (id) => {
+    await deleteQuestionById(id);
+    setConfirmDelete(null);
+    loadQuestions(selectedLessonId);
   };
 
   return (
     <div className={styles.grid}>
       <div className={styles.sidebar}><AdminSidebar /></div>
-
       <div className={styles.main}>
+        <h1>Manage Lessons & Questions</h1>
+
         <div className={styles.headerRow}>
-          <select
-            className={styles.dropdown}
-            value={selectedLessonId}
-            onChange={(e) => setSelectedLessonId(e.target.value)}
-          >
-            <option value="">🔻 Select a Course</option>
-            {lessons.map(lesson => (
-              <option key={lesson.id} value={lesson.id}>{lesson.title}</option>
+          <select value={selectedCourseId} onChange={(e) => loadLessons(e.target.value)} className={styles.select}>
+            <option value="">-- Select Course --</option>
+            {courses.map(course => (
+              <option key={course.id} value={course.id}>{course.title}</option>
             ))}
           </select>
-
-          <button
-            className={styles.addButton}
-            onClick={() => { resetForm(); setShowAddModal(true); }}
-          >
-            ➕ Add Question
-          </button>
+          <button className={styles.addButton} onClick={() => setShowLessonModal(true)}>+ Add Lesson</button>
         </div>
 
-        {questions.length > 0 ? (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Text</th>
-                <th>Type</th>
-                <th>Hint</th>
-                <th>Explanation</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questions.map((q, index) => (
-                <tr key={q.id}>
-                  <td>{index + 1}</td>
-                  <td>{q.text}</td>
-                  <td>{q.type}</td>
-                  <td>{q.hint || '-'}</td>
-                  <td>{q.explanation || '-'}</td>
-                  <td className={styles.actions}>
-                    <button className={styles.edit} onClick={() => openEditModal(q)}>✏️</button>
-                    <button className={styles.delete} onClick={() => handleDelete(q.id)}>🗑️</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className={styles.noData}>No questions found. Select a lesson or add a question.</p>
-        )}
-      </div>
+        {lessons.map(lesson => {
+          const isOpen = openLessonIds.includes(lesson.id);
+          return (
+            <div key={lesson.id} className={styles.lessonBlock}>
+              <div className={styles.lessonHeader}>
+                <div className={styles.lessonInfo} onClick={() => toggleLessonOpen(lesson.id)}>
+                  <span className={styles.lessonArrow}>{isOpen ? '▼' : '▶'}</span>
+                  <div>
+                    <div className={styles.cardTitle}>{lesson.title}</div>
+                    <div className={styles.cardSub}>{lesson.content}</div>
+                  </div>
+                </div>
 
-      {(showAddModal || showEditModal) && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <button className={styles.closeButton} onClick={() => {
-                setShowAddModal(false);
-                setShowEditModal(false);
-                resetForm();
-              }}>×</button>
-              <h2>{editingQuestion ? "Edit Question" : "Add Question"}</h2>
+                <div className={styles.lessonButtons}>
+                  <button className="edit" onClick={() => {
+                    setEditingLesson(lesson);
+                    setLessonTitle(lesson.title);
+                    setLessonContent(lesson.content);
+                    setShowLessonModal(true);
+                  }}>Edit</button>
+                  <button className="delete" onClick={() => setConfirmDelete({ type: 'lesson', id: lesson.id })}>Delete</button>
+                  <button className="addQ" onClick={() => {
+                    setSelectedLessonId(lesson.id);
+                    setShowQuestionModal(true);
+                  }}>+ Question</button>
+                </div>
+              </div>
+
+              {isOpen && (
+                <div className={styles.questionList}>
+                  {questions
+                    .filter(q => q.lesson === lesson.id)
+                    .map(q => (
+                      <div key={q.id} className={styles.card}>
+                        <div className="w-full">
+                          <div className={styles.cardTitle}>{q.text}</div>
+                          <div className={styles.cardSub}>Type: {q.type}</div>
+                        </div>
+                        <div className={styles.actions}>
+                          <button className="edit" onClick={() => {
+                            setEditingQuestion(q);
+                            setQuestionText(q.text);
+                            setQuestionType(q.type);
+                            setQuestionHint(q.hint);
+                            setQuestionExplanation(q.explanation);
+                            setOptions(q.options);
+                            setShowQuestionModal(true);
+                          }}>Edit</button>
+                          <button className="delete" onClick={() => setConfirmDelete({ type: 'question', id: q.id })}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
+          );
+        })}
 
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <label>Select Lesson *</label>
-              <select value={lessonId} onChange={e => setLessonId(e.target.value)} required>
-                <option value="">-- Select a Lesson --</option>
-                {lessons.map(lesson => (
-                  <option key={lesson.id} value={lesson.id}>{lesson.title}</option>
-                ))}
-              </select>
+        {/* Modals */}
+        {showLessonModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>{editingLesson ? 'Edit Lesson' : 'Add Lesson'}</h3>
+              <input value={lessonTitle} onChange={e => setLessonTitle(e.target.value)} placeholder="Lesson Title" />
+              <textarea value={lessonContent} onChange={e => setLessonContent(e.target.value)} placeholder="Lesson Content" />
+              <div className={styles.modalActions}>
+                <button className={styles.cancelBtn} onClick={() => setShowLessonModal(false)}>Cancel</button>
+                <button className={styles.submitBtn} onClick={handleAddOrEditLesson}>Save</button>
+              </div>
+            </div>
+          </div>
+        )}
 
-              <label>Question Type</label>
+        {showQuestionModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>{editingQuestion ? 'Edit Question' : 'Add Question'}</h3>
+              <input value={questionText} onChange={e => setQuestionText(e.target.value)} placeholder="Question Text" />
               <select value={questionType} onChange={e => setQuestionType(e.target.value)}>
                 <option value="mcq">Multiple Choice</option>
                 <option value="fill">Fill in the Blank</option>
                 <option value="match">Matching</option>
               </select>
 
-              <label>Question Text</label>
-              <textarea value={questionText} onChange={e => setQuestionText(e.target.value)} required />
-
-              {questionType === 'mcq' && (
-                <>
-                  {options.map((opt, idx) => (
+              {/* MCQ Options */}
+              {questionType === 'mcq' && options.map((opt, idx) => (
+                <div key={idx} className={styles.mcqOptionRow}>
+                  <input
+                    type="text"
+                    value={opt.text}
+                    placeholder={`Option ${idx + 1}`}
+                    onChange={(e) =>
+                      setOptions(options.map((o, i) => i === idx ? { ...o, text: e.target.value } : o))
+                    }
+                  />
+                  <label>
                     <input
-                      key={idx}
-                      placeholder={`Option ${idx + 1}`}
-                      value={opt}
-                      onChange={(e) => {
-                        const copy = [...options];
-                        copy[idx] = e.target.value;
-                        setOptions(copy);
-                      }}
-                    />
-                  ))}
-                  <label>Correct Option</label>
-                  <select value={correctAnswer} onChange={(e) => setCorrectAnswer(e.target.value)}>
-                    <option value="">Select</option>
-                    {options.map((_, idx) => (
-                      <option key={idx} value={idx}>{String.fromCharCode(65 + idx)}</option>
-                    ))}
-                  </select>
-                </>
-              )}
+                      type="radio"
+                      name="correct"
+                      checked={opt.is_correct}
+                      onChange={() =>
+                        setOptions(options.map((o, i) => ({ ...o, is_correct: i === idx })))
+                      }
+                    /> Correct
+                  </label>
+                </div>
+              ))}
 
+              {/* Fill in the blank */}
               {questionType === 'fill' && (
-                <>
-                  <label>Correct Answer</label>
-                  <input value={fillAnswer} onChange={e => setFillAnswer(e.target.value)} />
-                </>
+                <input
+                  type="text"
+                  placeholder="Correct Answer"
+                  value={options[0]?.text || ''}
+                  onChange={(e) => setOptions([{ text: e.target.value, is_correct: true }])}
+                />
               )}
 
+              {/* Matching */}
               {questionType === 'match' && (
                 <>
-                  {matchPairs.map((pair, idx) => (
+                  {options.map((opt, idx) => (
                     <div key={idx} className={styles.matchPair}>
                       <input
-                        value={pair.left}
-                        onChange={e => {
-                          const copy = [...matchPairs];
-                          copy[idx].left = e.target.value;
-                          setMatchPairs(copy);
-                        }}
-                        placeholder="Left"
+                        type="text"
+                        placeholder={`Q${idx + 1}`}
+                        value={opt.text}
+                        onChange={(e) =>
+                          setOptions(options.map((o, i) => i === idx ? { ...o, text: e.target.value } : o))
+                        }
                       />
                       <input
-                        value={pair.right}
-                        onChange={e => {
-                          const copy = [...matchPairs];
-                          copy[idx].right = e.target.value;
-                          setMatchPairs(copy);
-                        }}
-                        placeholder="Right"
+                        type="text"
+                        placeholder={`A${idx + 1}`}
+                        value={opt.match_pair || ''}
+                        onChange={(e) =>
+                          setOptions(options.map((o, i) => i === idx ? { ...o, match_pair: e.target.value } : o))
+                        }
                       />
+                      <button onClick={() => setOptions(options.filter((_, i) => i !== idx))}>✕</button>
                     </div>
                   ))}
-                  <button type="button" onClick={() => setMatchPairs([...matchPairs, { left: '', right: '' }])}>
-                    ➕ Add Pair
+                  <button className={styles.addButton} type="button" onClick={() => setOptions([...options, { text: '', match_pair: '' }])}>
+                    + Add Pair
                   </button>
                 </>
               )}
 
-              <label>Hint (optional)</label>
-              <textarea value={hint} onChange={e => setHint(e.target.value)} />
-
-              <label>Explanation (optional)</label>
-              <textarea value={explanation} onChange={e => setExplanation(e.target.value)} />
-
-              <button type="submit">{editingQuestion ? "Update" : "Submit"}</button>
-            </form>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelBtn} onClick={() => setShowQuestionModal(false)}>Cancel</button>
+                <button className={styles.submitBtn} onClick={handleAddOrEditQuestion}>Save</button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {confirmDelete && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <p>Are you sure you want to delete this {confirmDelete.type}?</p>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelBtn} onClick={() => setConfirmDelete(null)}>Cancel</button>
+                <button className={styles.submitBtn} onClick={() =>
+                  confirmDelete.type === 'lesson'
+                    ? handleDeleteLesson(confirmDelete.id)
+                    : handleDeleteQuestion(confirmDelete.id)
+                }>Confirm</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

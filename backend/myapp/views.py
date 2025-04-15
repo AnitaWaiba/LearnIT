@@ -202,6 +202,29 @@ def create_lesson(request):
     Lesson.objects.create(course=course, title=title, content=content)
     return Response({"message": "Lesson created successfully"}, status=201)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_lesson(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found"}, status=404)
+
+    lesson.title = request.data.get("title", lesson.title)
+    lesson.content = request.data.get("content", lesson.content)
+    lesson.save()
+    return Response({"message": "Lesson updated successfully"})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_lesson(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+        lesson.delete()
+        return Response({"message": "Lesson deleted successfully"})
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found"}, status=404)
+
 
 # ---------------- QUESTIONS ----------------
 @api_view(['POST'])

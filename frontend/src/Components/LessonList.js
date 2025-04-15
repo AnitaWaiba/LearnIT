@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './LessonList.module.css';
-import { getAllLessons } from '../utils/api';
+import { getLessonsByCourse } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 
 function LessonList() {
@@ -11,10 +11,10 @@ function LessonList() {
   useEffect(() => {
     const fetchLessons = async () => {
       try {
-        const data = await getAllLessons();
-        setLessons(data);
-        // TODO: Replace with actual progress from user profile
-        setUnlockedIndex(0); // For now, only first lesson is unlocked
+        const courseId = 1; // Replace with dynamic ID if needed
+        const response = await getLessonsByCourse(courseId);
+        setLessons(response.data); // Assuming response has .data
+        setUnlockedIndex(0);
       } catch (error) {
         console.error('Failed to fetch lessons:', error);
       }

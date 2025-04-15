@@ -8,27 +8,41 @@ const axiosInstance = axios.create({
   }
 });
 
+// ✅ Automatically attach JWT token to non-public requests
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
-    if (!config.headers) {
-      config.headers = {};
-    }
-    if (token) {
+    const publicPaths = ['/signup', '/login'];
+
+    // Skip adding token for public auth routes
+    const isPublic = publicPaths.some(path => config.url.includes(path));
+
+    if (!isPublic && token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// ✅ Handle 401/403 only for non-public endpoints
 axiosInstance.interceptors.response.use(
   response => response,
   error => {
-    if (error.response && error.response.status === 401) {
-      console.warn("🔒 Unauthorized. You might need to re-login.");
-      // Optionally clear token or redirect
+    const { config, response } = error;
+
+    const publicPaths = ['/signup', '/login'];
+    const isPublic = config && publicPaths.some(path => config.url.includes(path));
+
+    if (!isPublic && response) {
+      if (response.status === 401 || response.status === 403) {
+        console.warn("🔒 Session expired or forbidden. Logging out...");
+        localStorage.removeItem('access_token');
+        window.location.href = "/login";
+      }
     }
+
     return Promise.reject(error);
   }
 );

@@ -35,8 +35,11 @@ urlpatterns = [
     path('api/courses/create/', views.create_course, name='create_course'),
     path('api/courses/<int:course_id>/lessons/', views.get_lessons_by_course, name='get_lessons_by_course'),
     path('api/lessons/create/', views.create_lesson, name='create_lesson'),
+    path('api/lessons/<int:lesson_id>/update/', views.update_lesson, name='update_lesson'),
+    path('api/lessons/<int:lesson_id>/delete/', views.delete_lesson, name='delete_lesson'),
     path('api/lessons/<int:lesson_id>/questions/', views.get_lesson_questions, name='lesson_questions'),
     path('api/lessons/<int:lesson_id>/add-q/', views.add_question_to_lesson, name='add_question_to_lesson'),
+    
 
     # ❓ Questions
     path('api/questions/<int:question_id>/update/', views.update_question_by_id, name='update_question_by_id'),
