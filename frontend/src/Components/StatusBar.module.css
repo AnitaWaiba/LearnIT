@@ -29,11 +29,16 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #00bcd4;
+  border: 2px solid #0ea5e9;
+  transition: transform 0.2s ease;
+}
+
+.courseSelector:hover .courseIcon {
+  transform: scale(1.05);
 }
 
 .stat {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -41,27 +46,41 @@
   color: #1e293b;
 }
 
+/* Dropdown Menu */
 .dropdown {
   position: absolute;
-  top: 65px;
-  left: 10px;
-  background-color: white;
+  top: 60px;
+  left: 0;
+  background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   width: 320px;
   padding: 10px 0;
-  z-index: 99;
+  z-index: 999;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownTitle {
   padding: 8px 16px;
   font-size: 13px;
   font-weight: bold;
-  color: #6b7280;
+  color: #64748b;
   text-transform: uppercase;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 6px;
+  letter-spacing: 0.5px;
 }
 
 .dropdownItem {
@@ -69,9 +88,9 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
   font-size: 15px;
+  cursor: pointer;
+  transition: background 0.25s ease;
 }
 
 .dropdownItem:hover {
@@ -79,14 +98,21 @@
 }
 
 .dropdownIcon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .active {
   background-color: #e0f7fa;
-  font-weight: bold;
-  color: #0077b6;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.enrolling {
+  margin-left: auto;
+  font-size: 12px;
+  color: #64748b;
 }

@@ -4,20 +4,20 @@ import styles from './StatusBar.module.css';
 import { useCourseStore } from '../Store/courseStore';
 import { enrollInCourse } from '../utils/api';
 
-// 📦 Icons
+// 📦 Course Icons
 import introIcon from '../Image/intro.png';
 import frontendIcon from '../Image/frontend1.png';
 import backendIcon from '../Image/backend1.png';
 
-// 🎓 Local Course List (with backend IDs)
+// 🔗 Course Config
 const courseIconMap = {
   'Introduction to Computer': introIcon,
   'Frontend Development': frontendIcon,
   'Backend Development': backendIcon,
 };
 
-const defaultCourses = [
-  { id: 'intro', backendId: 1, name: 'Introduction to Computer', path: '/home' },
+const COURSES = [
+  { id: 'intro', backendId: 1, name: 'Introduction to Computer', path: '/learn' },
   { id: 'frontend', backendId: 2, name: 'Frontend Development', path: '/frontend' },
   { id: 'backend', backendId: 3, name: 'Backend Development', path: '/backend' },
 ];
@@ -25,23 +25,22 @@ const defaultCourses = [
 const StatusBar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [enrolling, setEnrolling] = useState(false);
+  const [enrollingCourseId, setEnrollingCourseId] = useState(null);
 
-  // Zustand state
   const selectedCourse = useCourseStore((state) => state.selectedCourse);
   const setSelectedCourse = useCourseStore((state) => state.setSelectedCourse);
 
-  const handleSelectCourse = async (course) => {
+  const handleCourseChange = async (course) => {
     try {
-      setEnrolling(true);
-      await enrollInCourse(course.backendId);
+      setEnrollingCourseId(course.id);
+      await enrollInCourse(course.backendId); // API call to enroll user
       setSelectedCourse(course);
-      setDropdownOpen(false);
       navigate(course.path);
-    } catch (error) {
-      console.error('❌ Enrollment failed:', error.response?.data || error.message);
+    } catch (err) {
+      console.error('❌ Failed to enroll:', err.response?.data || err.message);
     } finally {
-      setEnrolling(false);
+      setEnrollingCourseId(null);
+      setDropdownOpen(false);
     }
   };
 
@@ -50,16 +49,17 @@ const StatusBar = () => {
       <div className={styles.statusBar}>
         <div
           className={styles.courseSelector}
+          title="Click to switch course"
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          title="Switch Course"
         >
           <img
             src={courseIconMap[selectedCourse?.name] || introIcon}
-            alt={selectedCourse?.name}
+            alt={selectedCourse?.name || 'Course'}
             className={styles.courseIcon}
           />
         </div>
 
+        {/* Stats (you can replace with actual values) */}
         <div className={styles.stat}>🔥 <span>264</span></div>
         <div className={styles.stat}>💎 <span>3782</span></div>
         <div className={styles.stat}>❤️ <span>5</span></div>
@@ -68,11 +68,13 @@ const StatusBar = () => {
       {dropdownOpen && (
         <div className={styles.dropdown}>
           <h4 className={styles.dropdownTitle}>MY COURSES</h4>
-          {defaultCourses.map((course) => (
+          {COURSES.map((course) => (
             <div
               key={course.id}
-              className={`${styles.dropdownItem} ${course.id === selectedCourse?.id ? styles.active : ''}`}
-              onClick={() => handleSelectCourse(course)}
+              className={`${styles.dropdownItem} ${
+                selectedCourse?.id === course.id ? styles.active : ''
+              }`}
+              onClick={() => handleCourseChange(course)}
             >
               <img
                 src={courseIconMap[course.name]}
@@ -80,7 +82,7 @@ const StatusBar = () => {
                 className={styles.dropdownIcon}
               />
               <span>{course.name}</span>
-              {enrolling && course.id === selectedCourse?.id && <span className={styles.enrolling}>...</span>}
+              {enrollingCourseId === course.id && <span className={styles.enrolling}>...</span>}
             </div>
           ))}
         </div>

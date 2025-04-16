@@ -1,4 +1,4 @@
-/* Layout Grid */
+/* === Layout === */
 .grid {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -16,135 +16,117 @@
   padding: 40px;
 }
 
-/* Course Selector Row */
+/* === Header Row === */
 .headerRow {
   display: flex;
-  gap: 20px;
   align-items: center;
+  gap: 20px;
   margin-bottom: 30px;
 }
 
 .select {
   padding: 10px;
-  border-radius: 6px;
+  min-width: 240px;
   border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 14px;
-  min-width: 250px;
 }
 
 .addButton {
   background-color: #3b82f6;
   color: white;
-  padding: 10px 18px;
+  padding: 10px 16px;
+  font-weight: 600;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.3s;
 }
 
 .addButton:hover {
   background-color: #2563eb;
 }
 
-/* Lesson Dropdown Styling */
+/* === Lesson Cards === */
 .lessonBlock {
+  background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background-color: white;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding: 16px;
 }
 
 .lessonHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 10px;
 }
 
 .lessonInfo {
   display: flex;
-  align-items: flex-start;
   gap: 10px;
   cursor: pointer;
   flex-grow: 1;
 }
 
 .lessonArrow {
-  font-size: 18px;
-  width: 20px;
-  flex-shrink: 0;
+  font-size: 16px;
   color: #334155;
   user-select: none;
-  transition: transform 0.2s ease;
-}
-
-/* Optional: Rotate arrow if needed dynamically */
-.lessonArrow.open {
-  transform: rotate(90deg);
+  transition: transform 0.3s;
 }
 
 .lessonButtons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.lessonButtons button,
-.actions button {
-  padding: 6px 12px;
+.lessonButtons button {
   font-size: 13px;
-  border-radius: 6px;
+  padding: 6px 12px;
   font-weight: 500;
+  border-radius: 6px;
   border: none;
-  cursor: pointer;
   color: white;
-  transition: background 0.2s;
+  cursor: pointer;
 }
 
-.lessonButtons .edit,
-.actions .edit {
+.lessonButtons .edit {
   background-color: #3b82f6;
 }
 
-.lessonButtons .edit:hover,
-.actions .edit:hover {
+.lessonButtons .edit:hover {
   background-color: #2563eb;
 }
 
-.lessonButtons .delete,
-.actions .delete {
+.lessonButtons .delete {
   background-color: #ef4444;
 }
 
-.lessonButtons .delete:hover,
-.actions .delete:hover {
+.lessonButtons .delete:hover {
   background-color: #dc2626;
 }
 
-.lessonButtons .addQ,
-.actions .addQ {
+.lessonButtons .addQ {
   background-color: #0ea5e9;
 }
 
-.lessonButtons .addQ:hover,
-.actions .addQ:hover {
+.lessonButtons .addQ:hover {
   background-color: #0284c7;
 }
 
-/* Card Styles (lessons & questions) */
+/* === Cards (Blocks) === */
 .card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: white;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  background-color: white;
   padding: 16px;
   margin-bottom: 12px;
-  transition: background 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: background 0.3s ease;
 }
 
 .card:hover {
@@ -153,19 +135,32 @@
 
 .cardTitle {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .cardSub {
-  color: #64748b;
   font-size: 13px;
+  color: #64748b;
 }
 
-/* Action Buttons */
+/* === Question List === */
+.questionList {
+  padding-left: 20px;
+  border-left: 2px dashed #cbd5e1;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === Actions === */
 .actions {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  flex-wrap: wrap;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 20px;
 }
 
 .actions button {
@@ -173,73 +168,32 @@
   color: white;
   border: none;
   padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
 }
 
 .actions .edit {
   background-color: #3b82f6;
 }
 
-.actions .delete {
-  background-color: #ef4444;
-}
-
-.actions .addQ {
-  background-color: #0ea5e9;
-}
-
 .actions .edit:hover {
   background-color: #2563eb;
+}
+
+.actions .delete {
+  background-color: #ef4444;
 }
 
 .actions .delete:hover {
   background-color: #dc2626;
 }
 
-.actions .addQ:hover {
-  background-color: #0284c7;
-}
-
-/* Nested Question List */
-.questionList {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-left: 20px;
-  border-left: 2px dashed #cbd5e1;
-  animation: fadeSlide 0.3s ease;
-}
-
-@keyframes fadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* No Data Message */
-.noData {
-  margin-top: 20px;
-  color: #64748b;
-  font-style: italic;
-}
-
-/* Modal */
+/* === Modal Overlay === */
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
@@ -249,47 +203,42 @@
 
 .modalContent {
   background: white;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-  border-radius: 8px;
+  padding: 40px;
+  border-radius: 10px;
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow: hidden;
-  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
-}
-
-.modalContent form {
-  flex: 1;
+  max-width: 750px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-right: 6px;
+  max-height: 90vh;
 }
 
 .modalContent h3 {
-  margin-top: 0;
   font-size: 20px;
-  font-weight: bold;
   margin-bottom: 16px;
+  font-weight: bold;
 }
 
 .modalContent input,
-.modalContent select,
-.modalContent textarea {
+.modalContent textarea,
+.modalContent select {
+  width: 100%;
   padding: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 14px;
-  width: 100%;
   margin-bottom: 12px;
 }
 
-.modalContent textarea {
+.paragraphTextarea {
+  min-height: 200px;
+  height: 200px;
+  max-height: 400px;
   resize: vertical;
-  min-height: 60px;
+}
+
+.modalContent textarea {
+  min-height: 80px;
+  resize: vertical;
 }
 
 .modalActions {
@@ -299,52 +248,52 @@
 }
 
 .cancelBtn {
-  background-color: #e2e8f0;
+  background: #e2e8f0;
   color: #334155;
-  border: none;
   padding: 8px 14px;
+  font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
+  border: none;
 }
 
 .submitBtn {
   background-color: #10b981;
   color: white;
   padding: 10px 16px;
+  font-weight: bold;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
 }
 
 .submitBtn:hover {
   background-color: #059669;
 }
 
-.closeButton {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #333;
-  cursor: pointer;
+/* === MCQ Option Input Row === */
+.mcqOptionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.closeButton:hover {
-  color: #000;
+.mcqOptionRow input[type="text"] {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
-/* Matching Pair Inputs */
+/* === Matching Option Row === */
 .matchPair {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 10px;
-  align-items: center;
   margin-bottom: 10px;
-  width: 100%;
+  align-items: center;
 }
 
 .matchPair input {
@@ -352,53 +301,114 @@
   border-radius: 6px;
   border: 1px solid #cbd5e1;
   font-size: 14px;
-  width: 100%;
 }
 
 .matchPair button {
   background-color: #ef4444;
   color: white;
   border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
   font-size: 16px;
   font-weight: bold;
-  border-radius: 6px;
   cursor: pointer;
-  padding: 6px 10px;
-  height: 36px;
-  width: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
 }
 
 .matchPair button:hover {
   background-color: #dc2626;
 }
 
-/* MCQ Inputs */
-.mcqOptionRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
+/*Fill in the blanks*/
+.fillInput {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.correct {
+  color: #16a34a;
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+.incorrect {
+  color: #dc2626;
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+/* === Paragraph Block === */
+.lessonDescription {
+  background-color: #fff7ed;
+  border-left: 4px solid #fb923c;
+  padding: 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  margin-right: 150px;
+}
+
+.lessonDescription:hover {
+  background-color: #fffbeb;
+  border-left-color: #f97316;
+}
+
+.iconButton {
+  background: #f1f5f9;
+  border: none;
+  color: #334155;
+  font-size: 16px;
+  padding: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.1s ease;
+}
+
+.iconButton:hover {
+  background: #e2e8f0;
+  transform: scale(1.05);
+}
+
+.lessonActionRight {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: center;
+}
+
+.paragraphContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   margin-bottom: 12px;
 }
 
-.mcqOptionRow input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 14px;
+.paragraphContent {
+  flex-grow: 1;
+  margin-right: 16px;
 }
 
-.mcqOptionRow label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.paragraphContent .cardTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.paragraphContent .cardSub {
   font-size: 14px;
-  color: #334155;
-  font-weight: 500;
-  white-space: nowrap;
+  color: #4b5563;
+  line-height: 1.6;
 }

@@ -171,6 +171,34 @@
   font-style: italic;
 }
 
+.uploadMessage {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  background-color: #e0f2fe; /* light blue bg */
+  color: #1e40af;            /* deep blue text */
+  border: 1px solid #60a5fa; /* blue border */
+}
+
+.uploadMessage:empty {
+  display: none;
+}
+
+.uploadMessage.success {
+  background-color: #dcfce7;
+  border-color: #34d399;
+  color: #065f46;
+}
+
+.uploadMessage.error {
+  background-color: #fee2e2;
+  border-color: #f87171;
+  color: #991b1b;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .gridLayout {

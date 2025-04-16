@@ -13,12 +13,8 @@ import AboutUs from './Pages/AboutUs';
 
 // 📚 Learning Pages
 import Option from './Pages/Option';
-import Home from './Pages/Introduction/Home';
-import Frontend from './Pages/FrontendLearning/Frontend';
-import Backend from './Pages/BackendLearning/Backend';
 import DailyQuests from './Pages/DailyQuests';
-import LearnPage from './Pages/LearnPage';
-import LessonList from './Components/LessonList'; // ✅ New lesson listing component
+import LearnPage from './Components/LearnPage';
 import LessonPage from './Components/LessonPage';
 
 // 👤 User Pages
@@ -43,15 +39,15 @@ function App() {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem('access_token');
       if (!token) {
-        console.warn("🚫 No token found, skipping profile fetch");
+        console.warn('🚫 No token found, skipping profile fetch');
         return;
       }
 
       try {
         const response = await getProfile();
-        setCourses(response.data.courses || []);
+        setCourses(response.courses || []);
       } catch (error) {
         console.error('❌ Failed to load profile courses', error);
       }
@@ -59,7 +55,6 @@ function App() {
 
     fetchCourses();
   }, [setCourses]);
-
 
   return (
     <Router>
@@ -73,44 +68,11 @@ function App() {
 
         {/* 📚 Learning Routes */}
         <Route path="/option" element={<Option />} />
-
         <Route
           path="/learn"
           element={
             <LearnLayout>
               <LearnPage />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/home"
-          element={
-            <LearnLayout>
-              <Home />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/frontend"
-          element={
-            <LearnLayout>
-              <Frontend />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/backend"
-          element={
-            <LearnLayout>
-              <Backend />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/lessons"
-          element={
-            <LearnLayout>
-              <LessonList />
             </LearnLayout>
           }
         />
@@ -122,7 +84,6 @@ function App() {
             </LearnLayout>
           }
         />
-
         <Route
           path="/dailyquests"
           element={

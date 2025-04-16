@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
-from .models import UserProfile, Course, Lesson, Question, Option
+from .models import UserProfile, Course, Lesson, Question, Option, LessonBlock, UserLessonProgress
 
 # ==========================
 # 🔐 User Serializer
@@ -128,6 +128,18 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = ['id', 'course', 'title', 'content', 'created_at']
 
+class LessonBlockSerializer(serializers.ModelSerializer):
+    question = QuestionSerializer(read_only=True)
+
+    class Meta:
+        model = LessonBlock
+        fields = ['id', 'lesson', 'type', 'order', 'text', 'question']
+
+class UserLessonProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLessonProgress
+        fields = ['lesson', 'completed']
+
 # ==========================
 # 📘 Course Detail Serializer (course + lessons)
 # ==========================
@@ -147,3 +159,11 @@ class LessonDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id', 'course', 'title', 'content', 'questions', 'created_at']
+
+# ==========================
+# 📘 Lesson Progress
+# ==========================
+class LessonProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLessonProgress
+        fields = ['lesson', 'completed', 'completed_at']

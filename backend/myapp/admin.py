@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Lesson, Question, Option, UserProfile
+from .models import Course, Lesson, Question, Option, UserProfile, UserLessonProgress
 
 # 🔸 Inline for Options under a Question
 class OptionInline(admin.TabularInline):
@@ -43,5 +43,12 @@ class OptionAdmin(admin.ModelAdmin):
 # 🔹 UserProfile Admin with enrolled courses
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'current_streak']
-    filter_horizontal = ('courses',)  # ✅ Now points to Course model
+    list_display = ['user', 'avatar', 'current_streak']
+    fields = ['user', 'avatar', 'courses', 'current_streak']
+    filter_horizontal = ('courses',)
+
+#User Lesson Progress
+@admin.register(UserLessonProgress)
+class UserLessonProgressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'lesson', 'completed', 'completed_at']
+    list_filter = ['completed']

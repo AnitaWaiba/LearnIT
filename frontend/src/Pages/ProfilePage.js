@@ -15,12 +15,13 @@ function ProfilePage() {
 
   const [editingAvatar, setEditingAvatar] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await getProfile();
-        setUserData(response.data);
+        const profile = await getProfile();
+        setUserData(profile);
       } catch (error) {
         console.error('Failed to fetch profile:', error);
       }
@@ -34,13 +35,22 @@ function ProfilePage() {
 
     try {
       setUploading(true);
-      const response = await updateProfile(formData);
-      setUserData((prev) => ({
-        ...prev,
-        avatar: response.data.avatar,
-      }));
+      setUploadMessage('');
+
+      const res = await updateProfile(formData);
+
+      if (res.avatar) {
+        setUserData((prev) => ({
+          ...prev,
+          avatar: res.avatar,
+        }));
+        setUploadMessage('✅ Profile image uploaded successfully!');
+      } else {
+        setUploadMessage('✅ Upload completed, please refresh.');
+      }
     } catch (error) {
       console.error('Avatar upload failed:', error);
+      setUploadMessage('❌ Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -83,13 +93,18 @@ function ProfilePage() {
               />
             </label>
             {uploading && <div className={styles.spinner}>Uploading...</div>}
+            {uploadMessage && (
+              <div className={styles.uploadMessage}>{uploadMessage}</div>
+            )}
           </div>
         )}
 
         <div className={styles.profileInfo}>
           <h1>{userData.name}</h1>
           <p className={styles.username}>@{userData.username}</p>
-          <p className={styles.joined}>Joined <strong>{userData.joined}</strong></p>
+          <p className={styles.joined}>
+            Joined <strong>{userData.joined}</strong>
+          </p>
 
           <div className={styles.courseIcons}>
             {userData.courses.map((course) =>

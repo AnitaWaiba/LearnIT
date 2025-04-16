@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from myapp import views
+from myapp.views import mark_lesson_completed
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -39,7 +40,16 @@ urlpatterns = [
     path('api/lessons/<int:lesson_id>/delete/', views.delete_lesson, name='delete_lesson'),
     path('api/lessons/<int:lesson_id>/questions/', views.get_lesson_questions, name='lesson_questions'),
     path('api/lessons/<int:lesson_id>/add-q/', views.add_question_to_lesson, name='add_question_to_lesson'),
+    path('api/lessons/<int:lesson_id>/blocks/', views.get_lesson_blocks),
+    path('api/lesson/<int:lesson_id>/complete/', mark_lesson_completed),
+    path('api/lesson/<int:lesson_id>/complete/', views.mark_lesson_completed),
+    path('api/user/completed-lessons/<int:course_id>/', views.get_completed_lessons),
+
     
+    # LessonBlock CRUD
+    path('api/lessons/<int:lesson_id>/add-block/', views.add_paragraph_to_lesson, name='add_paragraph_to_lesson'),
+    path('api/blocks/<int:block_id>/update/', views.update_paragraph_by_id, name='update_paragraph_by_id'),
+    path('api/blocks/<int:block_id>/delete/', views.delete_paragraph_by_id, name='delete_paragraph_by_id'),
 
     # ❓ Questions
     path('api/questions/<int:question_id>/update/', views.update_question_by_id, name='update_question_by_id'),

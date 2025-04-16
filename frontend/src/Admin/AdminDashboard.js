@@ -4,26 +4,23 @@ import AdminSidebar from "./AdminSidebar";
 import { getAdminDashboard } from "../utils/api";
 
 const AdminDashboard = () => {
-  const [dashboardData, setDashboardData] = useState({
-    totalUsers: 0,
-    totalCourses: 0,
-    totalEnrollments: 0,
-    completionRate: 0,
-    activityLogs: [],
-    latestReviews: [],
-  });
+  const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await getAdminDashboard();
-        setDashboardData(res.data);
+        const data = await getAdminDashboard();
+        setDashboardData(data);
       } catch (err) {
         console.error("Failed to load dashboard", err);
       }
     };
     fetchDashboard();
   }, []);
+
+  if (!dashboardData) {
+    return <p style={{ padding: '40px' }}>Loading dashboard...</p>;
+  }
 
   return (
     <div className={styles.gridLayout}>
@@ -53,23 +50,31 @@ const AdminDashboard = () => {
 
         <div className={styles.section}>
           <h2>📋 Activity Logs</h2>
-          {dashboardData.activityLogs.map((log, idx) => (
-            <div key={idx} className={styles.logItem}>
-              <span>{log.date}</span>
-              <span>{log.action}</span>
-              <span>{log.user}</span>
-            </div>
-          ))}
+          {dashboardData.activityLogs.length === 0 ? (
+            <p>No activity logs found.</p>
+          ) : (
+            dashboardData.activityLogs.map((log, idx) => (
+              <div key={idx} className={styles.logItem}>
+                <span>{log.date}</span>
+                <span>{log.action}</span>
+                <span>{log.user}</span>
+              </div>
+            ))
+          )}
         </div>
 
         <div className={styles.section}>
           <h2>📝 Latest Reviews</h2>
-          {dashboardData.latestReviews.map((r, i) => (
-            <div key={i} className={styles.reviewItem}>
-              <strong>⭐ {r.rating}</strong>
-              <p>{r.comment}</p>
-            </div>
-          ))}
+          {dashboardData.latestReviews.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            dashboardData.latestReviews.map((r, i) => (
+              <div key={i} className={styles.reviewItem}>
+                <strong>⭐ {r.rating}</strong>
+                <p>{r.comment}</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

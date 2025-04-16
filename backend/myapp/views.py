@@ -11,10 +11,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import re, traceback
 
-from .models import UserProfile, Course, Lesson, Question, Option, Enrollment, Review
+from .models import UserProfile, Course, Lesson, Question, Option, Enrollment, Review, LessonBlock, UserLessonProgress
 from .serializers import (
     UserSerializer, CourseSerializer, LessonSerializer,
-    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer
+    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer, LessonBlockSerializer
 )
 
 # ---------------- AUTH ----------------
@@ -108,10 +108,12 @@ class ProfileView(APIView):
                     "icon": icon_url
                 })
 
+            profile, _ = UserProfile.objects.get_or_create(user=user)
             return Response({
                 "name": user.first_name or user.username,
                 "username": user.username,
                 "joined": formatted_joined,
+                "avatar": request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
                 "courses": courses
             })
 
@@ -126,21 +128,39 @@ class ProfileView(APIView):
 @permission_classes([IsAuthenticated])
 def update_profile_credentials(request):
     user = request.user
+    profile = user.profile
+
     data = request.data
+    avatar = request.FILES.get('avatar')
+
     username = data.get("username")
     current_password = data.get("current_password")
     new_password = data.get("new_password")
-    if not all([username, current_password, new_password]):
-        return Response({"error": "All fields are required."}, status=400)
-    if not user.check_password(current_password):
-        return Response({"error": "Current password is incorrect."}, status=400)
-    if User.objects.filter(username=username).exclude(pk=user.pk).exists():
-        return Response({"error": "Username is already taken."}, status=400)
-    user.username = username
-    user.set_password(new_password)
-    user.save()
-    return Response({"message": "Profile updated successfully."})
 
+    # ✅ Handle avatar upload
+    if avatar:
+        profile.avatar = avatar
+        profile.save()
+
+    # ✅ Optional credential update block
+    if any([username, current_password, new_password]):
+        if not all([username, current_password, new_password]):
+            return Response({"error": "All credential fields are required."}, status=400)
+
+        if not user.check_password(current_password):
+            return Response({"error": "Current password is incorrect."}, status=400)
+
+        if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+            return Response({"error": "Username is already taken."}, status=400)
+
+        user.username = username
+        user.set_password(new_password)
+        user.save()
+
+    return Response({
+        "message": "Profile updated successfully.",
+        "avatar": profile.avatar.url if profile.avatar else None
+    })
 
 # ---------------- COURSES ----------------
 @api_view(['GET'])
@@ -225,6 +245,71 @@ def delete_lesson(request, lesson_id):
     except Lesson.DoesNotExist:
         return Response({"error": "Lesson not found"}, status=404)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lesson_blocks(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found."}, status=404)
+
+    blocks = LessonBlock.objects.filter(lesson=lesson).select_related('question').prefetch_related('question__options')
+    serializer = LessonBlockSerializer(blocks, many=True)
+    return Response({
+        "lesson": LessonSerializer(lesson).data,
+        "blocks": serializer.data
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_paragraph_to_lesson(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found"}, status=404)
+
+    block_type = request.data.get("type")  # 'text' or 'question'
+    order = request.data.get("order")
+    text = request.data.get("text", "")
+    question_id = request.data.get("question_id")
+
+    if block_type not in ['text', 'question']:
+        return Response({"error": "Invalid block type"}, status=400)
+
+    block = LessonBlock.objects.create(
+        lesson=lesson,
+        type=block_type,
+        order=order,
+        text=text if block_type == 'text' else None,
+        question_id=question_id if block_type == 'question' else None
+    )
+    return Response({"message": "Lesson block created", "block_id": block.id}, status=201)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_paragraph_by_id(request, block_id):
+    try:
+        block = LessonBlock.objects.get(pk=block_id)
+    except LessonBlock.DoesNotExist:
+        return Response({"error": "Block not found"}, status=404)
+
+    block.type = request.data.get("type", block.type)
+    block.order = request.data.get("order", block.order)
+    block.text = request.data.get("text", block.text)
+    block.question_id = request.data.get("question_id", block.question_id)
+    block.save()
+
+    return Response({"message": "Lesson block updated"})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_paragraph_by_id(request, block_id):
+    try:
+        block = LessonBlock.objects.get(pk=block_id)
+        block.delete()
+        return Response({"message": "Lesson block deleted"})
+    except LessonBlock.DoesNotExist:
+        return Response({"error": "Block not found"}, status=404)
 
 # ---------------- QUESTIONS ----------------
 @api_view(['POST'])
@@ -285,6 +370,29 @@ def get_lesson_questions(request, lesson_id):
         "questions": serializer.data
     })
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_lesson_completed(request, lesson_id):
+    user = request.user
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        progress, created = UserLessonProgress.objects.get_or_create(user=user, lesson=lesson)
+        progress.completed = True
+        progress.save()
+        return Response({"message": "Lesson marked as completed."})
+    except Lesson.DoesNotExist:
+        return Response({"error": "Lesson not found."}, status=404)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_completed_lessons(request, course_id):
+    user = request.user
+    completed_lesson_ids = UserLessonProgress.objects.filter(
+        user=user,
+        lesson__course_id=course_id,
+        completed=True
+    ).values_list('lesson_id', flat=True)
+    return Response(list(completed_lesson_ids))
 
 # ---------------- ENROLLMENT ----------------
 @api_view(['POST'])

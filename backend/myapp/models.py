@@ -31,6 +31,17 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.course.title})"
+# ===========================================
+# ✅ Lesson Progress MODEL
+# ===========================================
+class UserLessonProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
 
 # ===========================================
 # ✅ QUESTION MODEL (MCQ, Fill, Match, Image)
@@ -65,6 +76,27 @@ class Option(models.Model):
 
     def __str__(self):
         return self.text
+
+# ===========================================
+# ✅ Lesson MODEL
+# ===========================================
+class LessonBlock(models.Model):
+    BLOCK_TYPES = [
+        ('text', 'Text'),
+        ('question', 'Question'),
+    ]
+
+    lesson = models.ForeignKey('Lesson', on_delete=models.CASCADE, related_name='blocks')
+    type = models.CharField(max_length=10, choices=BLOCK_TYPES)
+    order = models.PositiveIntegerField()
+    text = models.TextField(blank=True, null=True)
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.type.upper()} Block #{self.order}"
 
 
 # ===========================================

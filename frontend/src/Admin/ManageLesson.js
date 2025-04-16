@@ -6,26 +6,32 @@ import {
   createLesson,
   updateLesson,
   deleteLesson,
-  fetchQuestionsByLesson,
+  getLessonBlocks,
+  addParagraphBlock,
+  updateParagraphBlock,
+  deleteParagraphBlock,
   addQuestionToLesson,
   updateQuestionById,
-  deleteQuestionById
+  deleteQuestionById,
 } from '../utils/api';
 import AdminSidebar from './AdminSidebar';
 
 function ManageLesson() {
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const [questions, setQuestions] = useState([]);
-  const [openLessonIds, setOpenLessonIds] = useState([]);
+  const [lessonBlocks, setLessonBlocks] = useState([]);
 
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedLessonId, setSelectedLessonId] = useState('');
 
+  const [openLessonIds, setOpenLessonIds] = useState([]);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [showParagraphModal, setShowParagraphModal] = useState(false);
+
   const [editingLesson, setEditingLesson] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [editingParagraph, setEditingParagraph] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [lessonTitle, setLessonTitle] = useState('');
@@ -36,6 +42,9 @@ function ManageLesson() {
   const [questionHint, setQuestionHint] = useState('');
   const [questionExplanation, setQuestionExplanation] = useState('');
   const [options, setOptions] = useState([]);
+  const [fillAnswers, setFillAnswers] = useState({});
+
+  const [paragraphText, setParagraphText] = useState('');
 
   useEffect(() => {
     getAllCourses().then(setCourses);
@@ -47,7 +56,7 @@ function ManageLesson() {
         { text: '', is_correct: false },
         { text: '', is_correct: false },
         { text: '', is_correct: false },
-        { text: '', is_correct: false }
+        { text: '', is_correct: false },
       ]);
     } else if (questionType === 'fill') {
       setOptions([{ text: '', is_correct: true }]);
@@ -59,25 +68,27 @@ function ManageLesson() {
   const loadLessons = (courseId) => {
     setSelectedCourseId(courseId);
     setLessons([]);
-    setQuestions([]);
+    setLessonBlocks([]);
     getLessonsByCourse(courseId).then(setLessons);
   };
 
-  const loadQuestions = (lessonId) => {
-    fetchQuestionsByLesson(lessonId).then(fetched => {
-      setQuestions(prev => {
-        const others = prev.filter(q => q.lesson !== lessonId);
-        return [...others, ...fetched.map(q => ({ ...q, lesson: lessonId }))];
+  const loadBlocks = (lessonId) => {
+    getLessonBlocks(lessonId).then((data) => {
+      setLessonBlocks((prev) => {
+        const withoutCurrent = prev.filter(b => b.lesson !== lessonId);
+        // Add freshly loaded blocks
+        const withNew = data.blocks.map((b) => ({ ...b, lesson: lessonId }));
+        return [...withoutCurrent, ...withNew];
       });
     });
   };
 
   const toggleLessonOpen = (lessonId) => {
     if (openLessonIds.includes(lessonId)) {
-      setOpenLessonIds(prev => prev.filter(id => id !== lessonId));
+      setOpenLessonIds((prev) => prev.filter((id) => id !== lessonId));
     } else {
-      setOpenLessonIds(prev => [...prev, lessonId]);
-      loadQuestions(lessonId);
+      setOpenLessonIds((prev) => [...prev, lessonId]);
+      loadBlocks(lessonId);
     }
   };
 
@@ -105,31 +116,59 @@ function ManageLesson() {
       explanation: questionExplanation,
       options,
     };
-    editingQuestion
-      ? await updateQuestionById(editingQuestion.id, payload)
-      : await addQuestionToLesson(selectedLessonId, payload);
 
+    if (editingQuestion) {
+      await updateQuestionById(editingQuestion.id, payload);
+    } else {
+      await addQuestionToLesson(selectedLessonId, payload);
+    }
+
+    // ✅ Close modal and clear state
     setShowQuestionModal(false);
     setEditingQuestion(null);
     setQuestionText('');
     setQuestionHint('');
     setQuestionExplanation('');
     setQuestionType('mcq');
-    loadQuestions(selectedLessonId);
+
+    // ✅ Force reload
+    loadBlocks(selectedLessonId);
   };
+
 
   const handleDeleteQuestion = async (id) => {
     await deleteQuestionById(id);
     setConfirmDelete(null);
-    loadQuestions(selectedLessonId);
+    loadBlocks(selectedLessonId);
+  };
+
+  const handleAddOrEditParagraph = async () => {
+    if (editingParagraph) {
+      await updateParagraphBlock(editingParagraph.id, { text: paragraphText, type: 'text' });
+    } else {
+      await addParagraphBlock(selectedLessonId, {
+        type: 'text',
+        order: lessonBlocks.filter((b) => b.lesson === selectedLessonId).length + 1,
+        text: paragraphText,
+      });
+    }
+    setShowParagraphModal(false);
+    setParagraphText('');
+    setEditingParagraph(null);
+    loadBlocks(selectedLessonId);
+  };
+
+  const handleDeleteParagraph = async (id) => {
+    await deleteParagraphBlock(id);
+    setConfirmDelete(null);
+    loadBlocks(selectedLessonId);
   };
 
   return (
     <div className={styles.grid}>
       <div className={styles.sidebar}><AdminSidebar /></div>
       <div className={styles.main}>
-        <h1>Manage Lessons & Questions</h1>
-
+        <h1>Manage Lessons</h1>
         <div className={styles.headerRow}>
           <select value={selectedCourseId} onChange={(e) => loadLessons(e.target.value)} className={styles.select}>
             <option value="">-- Select Course --</option>
@@ -137,7 +176,17 @@ function ManageLesson() {
               <option key={course.id} value={course.id}>{course.title}</option>
             ))}
           </select>
-          <button className={styles.addButton} onClick={() => setShowLessonModal(true)}>+ Add Lesson</button>
+          <button
+            className={styles.iconButton}
+            onClick={() => {
+              setShowLessonModal(true);
+              setEditingLesson(null);
+              setLessonTitle('');
+              setLessonContent('');
+            }}
+          >
+            ➕
+          </button>
         </div>
 
         {lessons.map(lesson => {
@@ -152,44 +201,91 @@ function ManageLesson() {
                     <div className={styles.cardSub}>{lesson.content}</div>
                   </div>
                 </div>
-
-                <div className={styles.lessonButtons}>
-                  <button className="edit" onClick={() => {
+                <div className={styles.lessonActionRight}>
+                  <button 
+                  className={styles.iconButton}
+                  onClick={() => {
                     setEditingLesson(lesson);
                     setLessonTitle(lesson.title);
                     setLessonContent(lesson.content);
                     setShowLessonModal(true);
-                  }}>Edit</button>
-                  <button className="delete" onClick={() => setConfirmDelete({ type: 'lesson', id: lesson.id })}>Delete</button>
-                  <button className="addQ" onClick={() => {
+                  }}>📝</button>
+                  <button className={styles.iconButton} onClick={() => setConfirmDelete({ type: 'lesson', id: lesson.id })}>🗑️</button>
+                  <button 
+                  className={styles.iconButton}
+                  onClick={() => {
                     setSelectedLessonId(lesson.id);
                     setShowQuestionModal(true);
-                  }}>+ Question</button>
+                  }}>❓</button>
+                  <button 
+                  className={styles.iconButton}
+                  onClick={() => {
+                    setSelectedLessonId(lesson.id);
+                    setShowParagraphModal(true);
+                  }}>➕</button>
                 </div>
               </div>
 
               {isOpen && (
                 <div className={styles.questionList}>
-                  {questions
-                    .filter(q => q.lesson === lesson.id)
-                    .map(q => (
-                      <div key={q.id} className={styles.card}>
-                        <div className="w-full">
-                          <div className={styles.cardTitle}>{q.text}</div>
-                          <div className={styles.cardSub}>Type: {q.type}</div>
-                        </div>
-                        <div className={styles.actions}>
-                          <button className="edit" onClick={() => {
-                            setEditingQuestion(q);
-                            setQuestionText(q.text);
-                            setQuestionType(q.type);
-                            setQuestionHint(q.hint);
-                            setQuestionExplanation(q.explanation);
-                            setOptions(q.options);
-                            setShowQuestionModal(true);
-                          }}>Edit</button>
-                          <button className="delete" onClick={() => setConfirmDelete({ type: 'question', id: q.id })}>Delete</button>
-                        </div>
+                  {lessonBlocks
+                    .filter(b => b.lesson === lesson.id)
+                    .sort((a, b) => a.order - b.order)
+                    .map(block => (
+                      <div key={block.id} className={styles.card}>
+                        {block.type === 'text' ? (
+                            <div className={styles.paragraphContainer}>
+                              <div className={styles.paragraphContent}>
+                                <div className={styles.cardTitle}>📄 Paragraph</div>
+                                <div className={styles.cardSub}>{block.text}</div>
+                              </div>
+                              <div className={styles.actions}>
+                                <button className={styles.iconButton} onClick={() => {
+                                  setParagraphText(block.text);
+                                  setEditingParagraph(block);
+                                  setShowParagraphModal(true);
+                                  setSelectedLessonId(lesson.id);
+                                }}>📝</button>
+                                <button className={styles.iconButton} onClick={() =>
+                                  setConfirmDelete({ type: 'paragraph', id: block.id })
+                                }>🗑️</button>
+                              </div>
+                            </div>
+                          ) : (
+
+                          <>
+                            <input
+                              className={styles.fillInput}
+                              type="text"
+                              placeholder="Your answer here..."
+                              onChange={(e) => {
+                                const userAnswer = e.target.value.trim().toLowerCase();
+                                const correctAnswer = block.question.options?.[0]?.text?.trim().toLowerCase();
+                                setFillAnswers(prev => ({
+                                  ...prev,
+                                  [block.id]: userAnswer === correctAnswer
+                                }));
+                              }}
+                            />
+                            {fillAnswers[block.id] === true && <p className={styles.correct}>✅ Correct</p>}
+                            {fillAnswers[block.id] === false && <p className={styles.incorrect}>❌ Try again</p>}
+
+                            <div className={styles.cardSub}>Type: {block.question?.type}</div>
+                            <div className={styles.actions}>
+                              <button className={styles.iconButton} onClick={() => {
+                                setEditingQuestion(block.question);
+                                setQuestionText(block.question.text);
+                                setQuestionType(block.question.type);
+                                setQuestionHint(block.question.hint);
+                                setQuestionExplanation(block.question.explanation);
+                                setOptions(block.question.options || []);
+                                setSelectedLessonId(lesson.id);
+                                setShowQuestionModal(true);
+                              }}>📝</button>
+                              <button className={styles.iconButton} onClick={() => setConfirmDelete({ type: 'question', id: block.question.id })}>🗑️</button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                 </div>
@@ -198,7 +294,7 @@ function ManageLesson() {
           );
         })}
 
-        {/* Modals */}
+        {/* Lesson Modal */}
         {showLessonModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
@@ -213,6 +309,7 @@ function ManageLesson() {
           </div>
         )}
 
+        {/* Question Modal */}
         {showQuestionModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
@@ -258,6 +355,7 @@ function ManageLesson() {
                 />
               )}
 
+
               {/* Matching */}
               {questionType === 'match' && (
                 <>
@@ -296,6 +394,30 @@ function ManageLesson() {
           </div>
         )}
 
+        {/* Paragraph Modal */}
+        {showParagraphModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>{editingParagraph ? 'Edit Paragraph' : 'Add Paragraph'}</h3>
+              <textarea
+                className={styles.paragraphTextarea}
+                placeholder="Paragraph content..."
+                value={paragraphText}
+                onChange={(e) => setParagraphText(e.target.value)}
+              />
+              <div className={styles.modalActions}>
+                <button className={styles.cancelBtn} onClick={() => {
+                  setShowParagraphModal(false);
+                  setEditingParagraph(null);
+                  setParagraphText('');
+                }}>Cancel</button>
+                <button className={styles.submitBtn} onClick={handleAddOrEditParagraph}>Save</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Delete Modal */}
         {confirmDelete && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
@@ -305,7 +427,9 @@ function ManageLesson() {
                 <button className={styles.submitBtn} onClick={() =>
                   confirmDelete.type === 'lesson'
                     ? handleDeleteLesson(confirmDelete.id)
-                    : handleDeleteQuestion(confirmDelete.id)
+                    : confirmDelete.type === 'question'
+                    ? handleDeleteQuestion(confirmDelete.id)
+                    : handleDeleteParagraph(confirmDelete.id)
                 }>Confirm</button>
               </div>
             </div>
