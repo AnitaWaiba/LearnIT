@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from myapp import views
-from myapp.views import mark_lesson_completed
+from myapp.views import mark_lesson_completed, get_daily_quests, ListQuestView, DeleteQuestView, UpdateQuestView, submit_answer, get_leaderboard
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -15,6 +15,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # 🔧 Admin Panel
     path('admin/', admin.site.urls),
+    path('api/', include('myapp.urls')),
 
     # ✅ Root API Status
     path('', lambda request: HttpResponse("✅ Django API is running")),
@@ -41,7 +42,7 @@ urlpatterns = [
     path('api/lessons/<int:lesson_id>/questions/', views.get_lesson_questions, name='lesson_questions'),
     path('api/lessons/<int:lesson_id>/add-q/', views.add_question_to_lesson, name='add_question_to_lesson'),
     path('api/lessons/<int:lesson_id>/blocks/', views.get_lesson_blocks),
-    path('api/lesson/<int:lesson_id>/complete/', mark_lesson_completed),
+    path('api/lessons/<int:lesson_id>/complete/', mark_lesson_completed, name='mark_lesson_completed'),
     path('api/lesson/<int:lesson_id>/complete/', views.mark_lesson_completed),
     path('api/user/completed-lessons/<int:course_id>/', views.get_completed_lessons),
 
@@ -68,6 +69,14 @@ urlpatterns = [
     # 🔄 dj-rest-auth
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+
+    #daily quest
+    path('daily-quests/', get_daily_quests),
+    path('admin/quests/', ListQuestView.as_view()),
+    path('admin/quests/<int:quest_id>/delete/', DeleteQuestView.as_view()),
+    path('admin/quests/<int:quest_id>/update/', UpdateQuestView.as_view()),
+    path('submit-answer/<int:question_id>/', submit_answer, name='submit-answer'),
+    path('leaderboard/', get_leaderboard, name='get_leaderboard'),
 ]
 
 # ✅ Serve media files

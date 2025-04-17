@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import styles from './Login.module.css';
@@ -11,6 +11,12 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // 🔒 Clear tokens if user visits login (ensures fresh session)
+  useEffect(() => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,8 +32,6 @@ function Login() {
         password: formData.password,
       });
 
-      console.log("🔐 Login response:", response.data);
-      
       const { access, refresh } = response.data;
 
       if (access && refresh) {
@@ -35,13 +39,14 @@ function Login() {
         localStorage.setItem('refresh_token', refresh);
 
         toast.success('Login successful!');
+
         setTimeout(() => {
           if (formData.role === 'admin') {
             navigate('/admin');
           } else {
             navigate('/option');
           }
-        }, 1500);
+        }, 1200);
       } else {
         toast.error('Unexpected server response. Please try again.');
       }

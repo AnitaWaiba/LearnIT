@@ -11,18 +11,26 @@ export const COURSES = [
     id: 'frontend',
     name: 'Frontend Development',
     backendId: 2,
-    path: '/frontend',
+    path: '/learn',
   },
   {
     id: 'backend',
     name: 'Backend Development',
     backendId: 3,
-    path: '/backend',
+    path: '/learn',
   },
 ];
 
-// Zustand store
 export const useCourseStore = create((set) => ({
-  selectedCourse: COURSES[0],
-  setSelectedCourse: (course) => set({ selectedCourse: course }),
+  selectedCourse: JSON.parse(localStorage.getItem('selectedCourse')) || null,
+
+  setSelectedCourse: (course) => {
+    localStorage.setItem('selectedCourse', JSON.stringify(course));
+    set({ selectedCourse: course });
+  },
+
+  clearSelectedCourse: () => {
+    localStorage.removeItem('selectedCourse');
+    set({ selectedCourse: null });
+  },
 }));

@@ -254,37 +254,36 @@ function ManageLesson() {
                           ) : (
 
                           <>
-                            <input
-                              className={styles.fillInput}
-                              type="text"
-                              placeholder="Your answer here..."
-                              onChange={(e) => {
-                                const userAnswer = e.target.value.trim().toLowerCase();
-                                const correctAnswer = block.question.options?.[0]?.text?.trim().toLowerCase();
-                                setFillAnswers(prev => ({
-                                  ...prev,
-                                  [block.id]: userAnswer === correctAnswer
-                                }));
-                              }}
-                            />
-                            {fillAnswers[block.id] === true && <p className={styles.correct}>✅ Correct</p>}
-                            {fillAnswers[block.id] === false && <p className={styles.incorrect}>❌ Try again</p>}
-
+                            <div className={styles.cardTitle}>🧠 {block.question?.text}</div>
                             <div className={styles.cardSub}>Type: {block.question?.type}</div>
                             <div className={styles.actions}>
-                              <button className={styles.iconButton} onClick={() => {
-                                setEditingQuestion(block.question);
-                                setQuestionText(block.question.text);
-                                setQuestionType(block.question.type);
-                                setQuestionHint(block.question.hint);
-                                setQuestionExplanation(block.question.explanation);
-                                setOptions(block.question.options || []);
-                                setSelectedLessonId(lesson.id);
-                                setShowQuestionModal(true);
-                              }}>📝</button>
-                              <button className={styles.iconButton} onClick={() => setConfirmDelete({ type: 'question', id: block.question.id })}>🗑️</button>
+                              <button
+                                className={styles.iconButton}
+                                onClick={() => {
+                                  setEditingQuestion(block.question);
+                                  setQuestionText(block.question.text);
+                                  setQuestionType(block.question.type);
+                                  setQuestionHint(block.question.hint);
+                                  setQuestionExplanation(block.question.explanation);
+                                  setOptions(block.question.options || []);
+                                  setSelectedLessonId(lesson.id);
+                                  setShowQuestionModal(true);
+                                }}
+                              >
+                                📝
+                              </button>
+                              <button
+                                className={styles.iconButton}
+                                onClick={() =>
+                                  setConfirmDelete({ type: 'question', id: block.question.id })
+                                }
+                              >
+                                🗑️
+                              </button>
                             </div>
                           </>
+
+
                         )}
                       </div>
                     ))}

@@ -10,11 +10,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import re, traceback
+import random
+from datetime import date, timedelta
+from django.utils import timezone
+from django.utils.html import escape
 
-from .models import UserProfile, Course, Lesson, Question, Option, Enrollment, Review, LessonBlock, UserLessonProgress
+from .models import (UserProfile, Course, Lesson, Question, Option, Enrollment, Review, 
+                     LessonBlock, UserLessonProgress, CourseLevel, DailyQuest, UserDailyQuest)
 from .serializers import (
     UserSerializer, CourseSerializer, LessonSerializer,
-    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer, LessonBlockSerializer
+    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer, LessonBlockSerializer, DailyQuestSerializer, UserDailyQuestSerializer
 )
 
 # ---------------- AUTH ----------------
@@ -81,54 +86,48 @@ class ProfileView(APIView):
     def get(self, request):
         try:
             user = request.user
-            print("🧑 USER:", user)
-
             joined = user.date_joined
-            print("📅 Joined:", joined)
             suffix = get_day_suffix(joined.day)
             formatted_joined = f"{joined.day}{suffix} {joined.strftime('%B %Y')}"
 
             enrolled_courses = Course.objects.filter(course_enrollments__user=user).distinct()
-            print("📘 Enrolled courses count:", enrolled_courses.count())
 
             courses = []
             for course in enrolled_courses:
-                print("➡️ Course:", course.title)
                 try:
-                    if course.icon and hasattr(course.icon, 'url'):
-                        icon_url = request.build_absolute_uri(course.icon.url)
-                    else:
-                        icon_url = None
-                except Exception as e:
-                    print(f"⚠️ ICON LOAD FAILED for '{course.title}':", e)
+                    icon_url = request.build_absolute_uri(course.icon.url) if course.icon and hasattr(course.icon, 'url') else None
+                except Exception:
                     icon_url = None
-
                 courses.append({
                     "title": course.title,
                     "icon": icon_url
                 })
 
             profile, _ = UserProfile.objects.get_or_create(user=user)
+
             return Response({
                 "name": user.first_name or user.username,
                 "username": user.username,
                 "joined": formatted_joined,
                 "avatar": request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
-                "courses": courses
+                "courses": courses,
+
+                # ✅ New additions
+                "xp": profile.total_xp,
+                "hearts": profile.hearts,
+                "current_streak": profile.current_streak,
             })
 
         except Exception as e:
             print("🔥 CRITICAL PROFILE ERROR:")
-            traceback.print_exc()  # 👈 shows full Python error in terminal
+            traceback.print_exc()
             return Response({"error": "Internal Server Error", "details": str(e)}, status=500)
-
-
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile_credentials(request):
     user = request.user
-    profile = user.profile
+    profile, _ = UserProfile.objects.get_or_create(user=user)
 
     data = request.data
     avatar = request.FILES.get('avatar')
@@ -189,6 +188,42 @@ def create_course(request):
     )
     return Response({"message": "Course created successfully"}, status=201)
 
+class SetUserCourseLevel(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        course_id = request.data.get('course_id')
+        level = request.data.get('level')
+
+        if not course_id or not level:
+            return Response({'error': 'Missing course_id or level'}, status=400)
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found'}, status=404)
+
+        obj, created = CourseLevel.objects.update_or_create(
+            user=request.user,
+            course=course,
+            defaults={'level': level}
+        )
+
+        return Response({'status': 'success', 'level': obj.level})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_course_level(request, course_id):
+    user = request.user
+    try:
+        course = Course.objects.get(id=course_id)
+        entry = CourseLevel.objects.filter(user=user, course=course).first()
+        return Response({
+            "course": course.title,
+            "level": entry.level if entry else None
+        })
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found"}, status=404)
 
 # ---------------- LESSONS ----------------
 @api_view(['GET'])
@@ -199,10 +234,20 @@ def get_lessons_by_course(request, course_id):
     except Course.DoesNotExist:
         return Response({"error": "Course not found"}, status=404)
 
-    lessons = Lesson.objects.filter(course=course)
+    # Get the user's level for this course
+    try:
+        course_level = CourseLevel.objects.get(user=request.user, course=course).level
+    except CourseLevel.DoesNotExist:
+        course_level = 'beginner'  # default fallback
+
+    # Order of levels
+    level_order = ['beginner', 'some', 'pro']
+    level_index = level_order.index(course_level)
+
+    # Filter lessons based on user level and above
+    lessons = Lesson.objects.filter(course=course, min_level__in=level_order[level_index:]).order_by('id')
     serializer = LessonSerializer(lessons, many=True)
     return Response(serializer.data)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -210,6 +255,7 @@ def create_lesson(request):
     course_id = request.data.get("course_id")
     title = request.data.get("title")
     content = request.data.get("content")
+    min_level = request.data.get("min_level", "beginner")
 
     if not all([course_id, title]):
         return Response({"error": "Course and title are required"}, status=400)
@@ -219,7 +265,12 @@ def create_lesson(request):
     except Course.DoesNotExist:
         return Response({"error": "Invalid course"}, status=404)
 
-    Lesson.objects.create(course=course, title=title, content=content)
+    Lesson.objects.create(
+        course=course,
+        title=title,
+        content=content,
+        min_level=min_level
+    )
     return Response({"message": "Lesson created successfully"}, status=201)
 
 @api_view(['PUT'])
@@ -232,6 +283,7 @@ def update_lesson(request, lesson_id):
 
     lesson.title = request.data.get("title", lesson.title)
     lesson.content = request.data.get("content", lesson.content)
+    lesson.min_level = request.data.get("min_level", lesson.min_level)
     lesson.save()
     return Response({"message": "Lesson updated successfully"})
 
@@ -374,14 +426,63 @@ def get_lesson_questions(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def mark_lesson_completed(request, lesson_id):
     user = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    now = timezone.now()
+    today = now.date()
+
     try:
         lesson = Lesson.objects.get(id=lesson_id)
-        progress, created = UserLessonProgress.objects.get_or_create(user=user, lesson=lesson)
-        progress.completed = True
-        progress.save()
-        return Response({"message": "Lesson marked as completed."})
     except Lesson.DoesNotExist:
         return Response({"error": "Lesson not found."}, status=404)
+
+    # Prevent duplicate completions
+    progress, created = UserLessonProgress.objects.get_or_create(user=user, lesson=lesson)
+    if progress.completed:
+        return Response({"message": "Already completed."})
+
+    # ✅ Update progress
+    progress.completed = True
+    progress.completed_at = now
+    progress.save()
+
+    # ✅ Update streak
+    if profile.last_completed_date == today - timezone.timedelta(days=1):
+        profile.current_streak += 1
+    elif profile.last_completed_date != today:
+        profile.current_streak = 1  # restart streak
+    profile.last_completed_date = today
+
+    # ✅ Award XP
+    base_xp = 10
+    streak_bonus = 5 if profile.current_streak >= 3 else 0
+    profile.total_xp += base_xp + streak_bonus
+
+    # ✅ Refill hearts every 24 hours
+    if now - profile.last_heart_refill > timezone.timedelta(hours=24):
+        profile.hearts = 5
+        profile.last_heart_refill = now
+
+    quests = UserDailyQuest.objects.filter(user=user, date_assigned=today, completed=False)
+
+    for q in quests:
+        if q.quest.type == 'xp':
+            q.progress += base_xp + streak_bonus
+        elif q.quest.type == 'streak':
+            q.progress = profile.current_streak
+
+        if q.progress >= q.quest.target:
+            q.completed = True
+        q.save()
+
+    profile.save()
+
+    return Response({
+        "message": "Lesson completed 🎉",
+        "xp_awarded": base_xp + streak_bonus,
+        "current_streak": profile.current_streak,
+        "total_xp": profile.total_xp,
+        "hearts": profile.hearts,
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -394,6 +495,97 @@ def get_completed_lessons(request, course_id):
     ).values_list('lesson_id', flat=True)
     return Response(list(completed_lesson_ids))
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_answer(request, question_id):
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        return Response({"error": "Question not found"}, status=404)
+
+    answer = request.data.get("answer")
+    profile = request.user.profile
+    now = timezone.now()
+    today = now.date()
+
+    # ✅ Refill hearts if needed
+    if not profile.last_heart_refill or (now - profile.last_heart_refill > timedelta(hours=24)):
+        profile.hearts = 5
+        profile.last_heart_refill = now
+
+    correct = False
+
+    # ✅ Validate answer
+    if question.type == "mcq":
+        correct = question.options.filter(text=answer, is_correct=True).exists()
+    elif question.type == "fill":
+        correct_answer = question.options.filter(is_correct=True).first()
+        if correct_answer:
+            correct = answer.strip().lower() == correct_answer.text.strip().lower()
+    elif question.type == "match":
+        correct = True  # Future: validate match structure
+    else:
+        return Response({"error": "Unsupported question type"}, status=400)
+
+    # ✅ On correct answer: add XP
+    if correct:
+        profile.total_xp += 2
+
+        # 🔁 Update quest progress
+        quests = UserDailyQuest.objects.filter(user=request.user, date_assigned=today, completed=False)
+        for q in quests:
+            if q.quest.type == 'xp':
+                q.progress += 2
+            elif q.quest.type == 'accuracy':
+                q.progress += 1
+            if q.progress >= q.quest.target:
+                q.completed = True
+            q.save()
+
+    # ❌ On wrong: lose 1 heart
+    else:
+        if profile.hearts > 0:
+            profile.hearts -= 1
+        else:
+            return Response({"error": "Out of hearts"}, status=400)
+
+    profile.save()
+
+    return Response({
+        "correct": correct,
+        "xp": profile.total_xp,
+        "hearts": profile.hearts,
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def decrease_heart(request):
+    profile = request.user.profile
+    if profile.hearts > 0:
+        profile.hearts -= 1
+        profile.save()
+        return Response({"hearts": profile.hearts})
+    return Response({"error": "No hearts remaining."}, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_status_info(request):
+    profile = request.user.profile
+    return Response({
+        "xp": profile.total_xp,
+        "hearts": profile.hearts,
+        "streak": profile.current_streak
+    })
+
+def refill_hearts_if_needed(profile):
+    today = date.today()
+
+    if profile.hearts < 5:
+        if not profile.last_heart_refill or profile.last_heart_refill < today:
+            profile.hearts = 5
+            profile.last_heart_refill = today
+            profile.save()
+
 # ---------------- ENROLLMENT ----------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -402,10 +594,14 @@ def enroll_in_course(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
         Enrollment.objects.get_or_create(user=user, course=course)
-        return Response({"message": f"Enrolled in {course.title}"}, status=200)
+
+        level_entry = CourseLevel.objects.filter(user=user, course=course).first()
+        return Response({
+            "message": f"Enrolled in {course.title}",
+            "level": level_entry.level if level_entry else None
+        }, status=200)
     except Course.DoesNotExist:
-        return Response({"error": "Course not found"}, status=404)
-    
+        return Response({"error": "Course not found"}, status=404)    
 
 # ---------------- ADMIN ----------------
 @api_view(['GET'])
@@ -423,6 +619,102 @@ def admin_dashboard(request):
     }
     return Response(data)
 
+# ------------------ USER: GET DAILY QUESTS ------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_daily_quests(request):
+    user = request.user
+    today = timezone.now().date()
+
+    # Only assign if none already assigned today
+    if not UserDailyQuest.objects.filter(user=user, date_assigned=today).exists():
+        types = ['xp', 'streak', 'accuracy']
+        for quest_type in types:
+            quest = DailyQuest.objects.filter(type=quest_type).order_by('?').first()
+            if quest:
+                UserDailyQuest.objects.create(user=user, quest=quest)
+
+    quests = UserDailyQuest.objects.filter(user=user, date_assigned=today).select_related('quest')
+
+    data = [
+        {
+            'id': q.id,
+            'title': q.quest.title,
+            'type': q.quest.type,
+            'target': q.quest.target,
+            'progress': q.progress,
+            'completed': q.completed,
+            'reward_xp': q.quest.reward_xp,
+        }
+        for q in quests
+    ]
+
+    return Response(data)
+
+# ------------------ ADMIN: LIST + CREATE ------------------
+class ListQuestView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        quests = DailyQuest.objects.all()
+        serializer = DailyQuestSerializer(quests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = DailyQuestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ------------------ ADMIN: UPDATE QUEST ------------------
+class UpdateQuestView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def put(self, request, pk):
+        try:
+            quest = DailyQuest.objects.get(pk=pk)
+        except DailyQuest.DoesNotExist:
+            return Response({'error': 'Quest not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DailyQuestSerializer(quest, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': '✅ Quest updated', 'quest': serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ------------------ ADMIN: DELETE QUEST ------------------
+class DeleteQuestView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def delete(self, request, pk):
+        try:
+            quest = DailyQuest.objects.get(pk=pk)
+            quest.delete()
+            return Response({'message': '🗑️ Quest deleted'}, status=status.HTTP_204_NO_CONTENT)
+        except DailyQuest.DoesNotExist:
+            return Response({'error': 'Quest not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_leaderboard(request):
+    top_users = UserProfile.objects.select_related('user').order_by('-total_xp')[:100]
+
+    result = []
+    for profile in top_users:
+        user = profile.user
+        avatar_url = request.build_absolute_uri(profile.avatar.url) if profile.avatar else None
+
+        result.append({
+            "username": escape(user.username),
+            "name": escape(user.first_name or user.username),
+            "xp": profile.total_xp,
+            "avatar": avatar_url,
+        })
+
+    return Response(result)
 
 # ---------------- USER MANAGEMENT ----------------
 @api_view(['GET'])
@@ -514,3 +806,4 @@ def delete_question_by_id(request, question_id):
         return Response({"message": "Question deleted"})
     except Question.DoesNotExist:
         return Response({"error": "Question not found"}, status=404)
+

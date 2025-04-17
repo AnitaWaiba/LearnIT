@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import styles from './LessonPage.module.css';
-import { getLessonBlocks } from '../utils/api';
-import { markLessonCompleted } from '../utils/api';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import {
+  getLessonBlocks,
+  markLessonCompleted,
+  submitAnswer,
+  getProfile,
+} from '../utils/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useProfileStore } from '../Store/profileStore';
 
 function LessonPage() {
   const { lessonId } = useParams();
+  const navigate = useNavigate();
+  const updateProfile = useProfileStore((s) => s.setFromProfile);  
+
   const [blocks, setBlocks] = useState([]);
   const [lesson, setLesson] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,84 +21,156 @@ function LessonPage() {
   const [userInput, setUserInput] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [correct, setCorrect] = useState(null);
-  const [completed, setCompleted] = useState(false);
+  const [showCompletedModal, setShowCompletedModal] = useState(false);
+  const [showHeartModal, setShowHeartModal] = useState(false);
+
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [shuffledRightOptions, setShuffledRightOptions] = useState([]);
+  const [wrongPairs, setWrongPairs] = useState([]);
+
+  const pairColors = ['matchPairA', 'matchPairB', 'matchPairC', 'matchPairD', 'matchPairE'];
+  const currentBlock = blocks[currentIndex];
+  const isLastBlock = currentIndex === blocks.length - 1;
 
   useEffect(() => {
     const fetchBlocks = async () => {
       try {
-        const response = await getLessonBlocks(lessonId);
-        setLesson(response.lesson);
-        setBlocks(response.blocks);
-      } catch (error) {
-        console.error('Failed to fetch lesson blocks:', error);
+        const res = await getLessonBlocks(lessonId);
+        setLesson(res.lesson);
+        setBlocks(res.blocks);
+      } catch (err) {
+        console.error('Failed to load lesson:', err);
       }
     };
     fetchBlocks();
   }, [lessonId]);
 
-  const currentBlock = blocks[currentIndex];
-  const isLastBlock = currentIndex === blocks.length - 1;
+  useEffect(() => {
+    if (currentBlock?.question?.type === 'match') {
+      const rightOptions = currentBlock.question.options.map(opt => opt.match_pair);
+      setShuffledRightOptions([...rightOptions].sort(() => Math.random() - 0.5));
+      setMatches([]);
+      setWrongPairs([]);
+      setSelectedLeft(null);
+      setShowResult(false);
+      setCorrect(null);
+    }
+  }, [currentBlock]);
 
-  const handleOptionSelect = (index) => {
-    if (!showResult) {
-      setSelectedOption(index);
+  const refreshProfile = async () => {
+    try {
+      const profile = await getProfile();
+      updateProfile(profile);
+    } catch (err) {
+      console.error("Failed to refresh profile:", err);
     }
   };
 
-  const handleCheck = () => {
+  const handleOptionSelect = (index) => {
+    if (!showResult) setSelectedOption(index);
+  };
+
+  const handleCheck = async () => {
     if (!currentBlock?.question) return;
 
-    if (currentBlock.question.type === 'mcq') {
-      const isCorrect = currentBlock.question.options[selectedOption]?.is_correct;
-      setCorrect(isCorrect);
+    const question = currentBlock.question;
+    let answer;
+
+    if (question.type === 'mcq') {
+      answer = question.options[selectedOption]?.text;
+    } else if (question.type === 'fill') {
+      answer = userInput.trim();
+    } else if (question.type === 'match') {
+      answer = matches; // For now, just pass the structure
     }
 
-    if (currentBlock.question.type === 'fill') {
-      const correctAnswer = currentBlock.question.options[0]?.text?.trim().toLowerCase();
-      const userAnswer = userInput.trim().toLowerCase();
-      setCorrect(userAnswer === correctAnswer);
+    try {
+      const res = await submitAnswer(question.id, answer);
+      setCorrect(res.correct);
+      updateProfile({
+        xp: res.xp,
+        hearts: res.hearts,
+        current_streak: res.streak,
+      });
+
+      if (!res.correct && res.hearts <= 0) {
+        setShowHeartModal(true);
+      }
+    } catch (err) {
+      console.error('Answer submission failed:', err);
+      if (err.response?.data?.error === 'Out of hearts') {
+        setShowHeartModal(true);
+      }
     }
 
+    await refreshProfile();
     setShowResult(true);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isLastBlock) {
-      setCompleted(true);
+      try {
+        await markLessonCompleted(lessonId);
+        setShowCompletedModal(true);
+        await refreshProfile();
+        setTimeout(() => {
+          setShowCompletedModal(false);
+          navigate('/learn', { state: { reload: true } });
+        }, 2000);
+      } catch (err) {
+        console.error("❌ Error marking lesson complete:", err);
+      }
       return;
     }
-    setCurrentIndex(currentIndex + 1);
+
+    setCurrentIndex(prev => prev + 1);
     setSelectedOption(null);
     setUserInput('');
     setShowResult(false);
     setCorrect(null);
+    setMatches([]);
+    setWrongPairs([]);
+    setSelectedLeft(null);
   };
 
-  if (!lesson || blocks.length === 0) {
-    return <div className={styles.loading}>Loading...</div>;
-  }
+  const handleLeftClick = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightClick = (item) => {
+    if (showResult || !selectedLeft) return;
+
+    setMatches(prev => {
+      const filtered = prev.filter(m => m.left !== selectedLeft && m.right !== item);
+      return [...filtered, { left: selectedLeft, right: item }];
+    });
+
+    setSelectedLeft(null);
+  };
+
+  const getPairColor = (left, right) => {
+    const index = matches.findIndex(m => m.left === left || m.right === right);
+    return pairColors[index % pairColors.length];
+  };
+
+  const isIncorrectLeft = (text) => showResult && wrongPairs.some(pair => pair.left === text);
+  const isIncorrectRight = (text) => showResult && wrongPairs.some(pair => pair.right === text);
 
   return (
     <div className={styles.container}>
-      {/* Progress Bar */}
       <div className={styles.progressBar}>
-        <div
-          className={styles.progress}
-          style={{ width: `${((currentIndex + 1) / blocks.length) * 100}%` }}
-        />
+        <div className={styles.progress} style={{ width: `${((currentIndex + 1) / blocks.length) * 100}%` }} />
       </div>
 
-      {/* Lesson Card */}
       <div className={styles.card}>
-        <h2>{lesson.title}</h2>
+        <h2>{lesson?.title}</h2>
 
-        {/* Text Block */}
-        {currentBlock.type === 'text' && (
+        {currentBlock?.type === 'text' && (
           <>
             <div className={styles.paragraphBlock}>
-              {currentBlock.text.split('\n').map((line, idx) => (
-                <p key={idx}>{line}</p>
-              ))}
+              {currentBlock.text.split('\n').map((line, idx) => <p key={idx}>{line}</p>)}
             </div>
             <div className={styles.actionRow}>
               <button className={styles.nextBtn} onClick={handleNext}>
@@ -101,21 +180,19 @@ function LessonPage() {
           </>
         )}
 
-        {/* Question Block */}
-        {currentBlock.type === 'question' && currentBlock.question && (
+        {currentBlock?.type === 'question' && currentBlock.question && (
           <>
             <div className={styles.contextBox}>🧠 {currentBlock.question.text}</div>
 
-            {/* MCQ */}
             {currentBlock.question.type === 'mcq' && (
               <div className={styles.options}>
                 {currentBlock.question.options.map((opt, idx) => (
                   <button
                     key={idx}
-                    className={`${styles.optionBtn} ${
-                      selectedOption === idx ? styles.selected : ''
-                    } ${showResult && selectedOption === idx
-                      ? correct ? styles.correct : styles.incorrect : ''
+                    className={`${styles.optionBtn} ${selectedOption === idx ? styles.selected : ''} ${
+                      showResult && selectedOption === idx
+                        ? correct ? styles.correct : styles.incorrect
+                        : ''
                     }`}
                     onClick={() => handleOptionSelect(idx)}
                     disabled={showResult}
@@ -126,28 +203,59 @@ function LessonPage() {
               </div>
             )}
 
-            {/* Fill in the Blank */}
             {currentBlock.question.type === 'fill' && (
               <div className={styles.fillContainer}>
                 <input
                   type="text"
-                  className={styles.fillInput}
                   value={userInput}
-                  placeholder="Type your answer..."
                   onChange={(e) => setUserInput(e.target.value)}
+                  className={styles.fillInput}
+                  placeholder="Type your answer..."
                   disabled={showResult}
                 />
               </div>
             )}
 
-            {/* Matching (Optional UI - Not implemented fully here) */}
             {currentBlock.question.type === 'match' && (
-              <div className={styles.matchNote}>
-                Matching questions are not yet interactive.
+              <div className={styles.matchGrid}>
+                <div className={styles.matchColumn}>
+                  {currentBlock.question.options.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      className={`${styles.matchBtn} ${selectedLeft === opt.text ? styles.selected : ''} ${styles[getPairColor(opt.text, '')]} ${isIncorrectLeft(opt.text) ? styles.incorrectPair : ''}`}
+                      onClick={() => handleLeftClick(opt.text)}
+                      disabled={showResult}
+                    >
+                      {opt.text}
+                    </button>
+                  ))}
+                </div>
+                <div className={styles.matchColumn}>
+                  {shuffledRightOptions.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      className={`${styles.matchBtn} ${styles[getPairColor('', opt)]} ${isIncorrectRight(opt) ? styles.incorrectPair : ''}`}
+                      onClick={() => handleRightClick(opt)}
+                      disabled={showResult}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Result Feedback */}
+            {matches.length > 0 && currentBlock.question.type === 'match' && (
+              <div className={styles.matchReview}>
+                <h4>Your Matches:</h4>
+                <ul>
+                  {matches.map((m, i) => (
+                    <li key={i}>{m.left} ➜ {m.right}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {showResult && (
               <div className={styles.feedback}>
                 {correct ? '✅ Correct!' : '❌ Incorrect'}
@@ -158,16 +266,7 @@ function LessonPage() {
               {!showResult ? (
                 <>
                   <button className={styles.skipBtn} onClick={handleNext}>Skip</button>
-                  <button
-                    className={styles.checkBtn}
-                    disabled={
-                      (currentBlock.question.type === 'mcq' && selectedOption === null) ||
-                      (currentBlock.question.type === 'fill' && userInput.trim() === '')
-                    }
-                    onClick={handleCheck}
-                  >
-                    Check
-                  </button>
+                  <button className={styles.checkBtn} onClick={handleCheck}>Check</button>
                 </>
               ) : (
                 <button className={styles.nextBtn} onClick={handleNext}>
@@ -179,14 +278,28 @@ function LessonPage() {
         )}
       </div>
 
-      {/* Completion Message */}
-      {completed && (
+      {showCompletedModal && (
         <div className={styles.completionOverlay}>
           <div className={styles.completionBox}>
             <h2>🎉 Lesson Completed!</h2>
-            <p>You’ve successfully completed <strong>{lesson.title}</strong>.</p>
-            <button onClick={() => setCompleted(false)} className={styles.closeBtn}>
-              Got it!
+            <p>You've successfully completed <strong>{lesson.title}</strong>.</p>
+            <button className={styles.closeBtn} onClick={() => {
+              setShowCompletedModal(false);
+              navigate('/learn', { state: { reload: true } });
+            }}>
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showHeartModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Out of Hearts ❤️</h3>
+            <p>You’ve used all your hearts for today. Try again after refill!</p>
+            <button onClick={() => setShowHeartModal(false)} className={styles.closeBtn}>
+              Close
             </button>
           </div>
         </div>

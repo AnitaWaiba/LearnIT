@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 import { getProfile } from './utils/api';
 import { useProfileStore } from './Store/profileStore';
 
@@ -10,103 +11,118 @@ import Signup from './Pages/Signup';
 import Login from './Pages/Login';
 import ContactUs from './Pages/ContactUs';
 import AboutUs from './Pages/AboutUs';
+import Terms from './Pages/Terms';
+import Privacy from './Pages/Privacy';
 
-// 📚 Learning Pages
+// 📚 Learning Flow
 import Option from './Pages/Option';
-import DailyQuests from './Pages/DailyQuests';
+import LevelSelectionPage from './Components/LevelSelectionPage';
 import LearnPage from './Components/LearnPage';
 import LessonPage from './Components/LessonPage';
+import LearnLayout from './Components/LearnLayout';
 
-// 👤 User Pages
+// 🎯 Gamified Features
+import DailyQuests from './Pages/DailyQuests';
+import LeaderboardPage from './Pages/LeaderboardPage';
+import QuestLayout from './Components/QuestLayout';
+
+// 👤 User Profile & Settings
 import ProfilePage from './Pages/ProfilePage';
 import EditProfile from './Pages/EditProfile';
 import SettingsPage from './Pages/SettingsPage';
 import HelpPage from './Pages/HelpPage';
-import Terms from './Pages/Terms';
-import Privacy from './Pages/Privacy';
 
-// 🛠️ Admin
+// 🛠️ Admin Dashboard
 import AdminDashboard from './Admin/AdminDashboard';
 import ManageUsers from './Admin/ManageUsers';
 import ManageLesson from './Admin/ManageLesson';
+import ManageQuest from './Admin/ManageQuest';
 
-// 🧱 Layouts
-import LearnLayout from './Components/LearnLayout';
-import QuestLayout from './Components/QuestLayout';
+// 🔐 Auth Guard
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('access_token');
+  return token ? children : <Navigate to="/login" replace />;
+};
 
 function App() {
   const setCourses = useProfileStore((state) => state.setCourses);
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchProfile = async () => {
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('🚫 No token found, skipping profile fetch');
-        return;
-      }
+      if (!token) return;
 
       try {
-        const response = await getProfile();
-        setCourses(response.courses || []);
-      } catch (error) {
-        console.error('❌ Failed to load profile courses', error);
+        const profile = await getProfile();
+        setCourses(profile.courses || []);
+      } catch (err) {
+        console.error('❌ Failed to load profile in App.js:', err);
       }
     };
 
-    fetchCourses();
+    fetchProfile();
   }, [setCourses]);
 
   return (
     <Router>
       <Routes>
-        {/* 🌐 Public Routes */}
+        {/* Public Pages */}
         <Route path="/" element={<OpeningPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
-
-        {/* 📚 Learning Routes */}
-        <Route path="/option" element={<Option />} />
-        <Route
-          path="/learn"
-          element={
-            <LearnLayout>
-              <LearnPage />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/lesson/:lessonId"
-          element={
-            <LearnLayout>
-              <LessonPage />
-            </LearnLayout>
-          }
-        />
-        <Route
-          path="/dailyquests"
-          element={
-            <QuestLayout>
-              <DailyQuests />
-            </QuestLayout>
-          }
-        />
-
-        {/* 👤 User Routes */}
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/edit" element={<EditProfile />} />
-        <Route path="/settings/*" element={<SettingsPage />} />
-        <Route path="/help" element={<HelpPage />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
 
-        {/* 🛠️ Admin Routes */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/manageusers" element={<ManageUsers />} />
-        <Route path="/managelessons" element={<ManageLesson />} />
+        {/* Learning Section */}
+        <Route path="/option" element={<PrivateRoute><Option /></PrivateRoute>} />
+        <Route path="/level-select" element={<PrivateRoute><LevelSelectionPage /></PrivateRoute>} />
+        <Route path="/learn" element={
+          <PrivateRoute>
+            <LearnLayout>
+              <LearnPage />
+            </LearnLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/lesson/:lessonId" element={
+          <PrivateRoute>
+            <LearnLayout>
+              <LessonPage />
+            </LearnLayout>
+          </PrivateRoute>
+        } />
 
-        {/* ❌ 404 Route */}
+        {/* Gamified Features */}
+        <Route path="/dailyquests" element={
+          <PrivateRoute>
+            <QuestLayout>
+              <DailyQuests />
+            </QuestLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/leaderboard" element={
+          <PrivateRoute>
+            <QuestLayout>
+              <LeaderboardPage />
+            </QuestLayout>
+          </PrivateRoute>
+        } />
+
+
+        {/* User Section */}
+        <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/edit" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
+        <Route path="/settings/*" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+        <Route path="/help" element={<PrivateRoute><HelpPage /></PrivateRoute>} />
+
+        {/* Admin Section */}
+        <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+        <Route path="/manageusers" element={<PrivateRoute><ManageUsers /></PrivateRoute>} />
+        <Route path="/managelessons" element={<PrivateRoute><ManageLesson /></PrivateRoute>} />
+        <Route path="/managequests" element={<PrivateRoute><ManageQuest /></PrivateRoute>} />
+
+        {/* 404 Fallback */}
         <Route
           path="*"
           element={

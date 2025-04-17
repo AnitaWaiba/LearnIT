@@ -1,37 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getDailyQuests } from '../utils/api';
 import styles from './DailyQuests.module.css';
 
-const DailyQuests = () => {
-  const quests = [
-    { id: 1, icon: '⚡', title: 'Earn 20 XP', progress: 0, total: 20 },
-    { id: 2, icon: '🤖', title: 'Get 5 in a row correct in 2 lessons', progress: 0, total: 2 },
-    { id: 3, icon: '⏱️', title: 'Score 80% or higher in 5 lessons', progress: 0, total: 5 },
-  ];
+const icons = {
+  xp: '⚡',
+  streak: '🔥',
+  accuracy: '🎯',
+};
+
+function DailyQuests() {
+  const [quests, setQuests] = useState([]);
+
+  useEffect(() => {
+    getDailyQuests().then(setQuests).catch(console.error);
+  }, []);
 
   return (
     <div className={styles.questContainer}>
-      <h2 className={styles.title}>Daily Quests</h2>
-
+      <h2 className={styles.heading}>Daily Quests</h2>
       <div className={styles.questList}>
-        {quests.map((quest) => (
-          <div key={quest.id} className={styles.questCard}>
-            <div className={styles.questHeader}>
-              <span className={styles.icon}>{quest.icon}</span>
-              <span className={styles.questTitle}>{quest.title}</span>
+        {quests.map((q) => (
+          <div key={q.id} className={styles.questCard}>
+            <div className={styles.iconCircle}>{icons[q.type]}</div>
+
+            <div className={styles.questDetails}>
+              <div className={styles.questTitle}>{q.title}</div>
+              <div className={styles.progressBarWrapper}>
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${(q.progress / q.target) * 100}%` }}
+                />
+              </div>
+              <div className={styles.progressText}>
+                {q.progress} / {q.target}
+              </div>
             </div>
-            <progress
-              className={styles.progressBar}
-              value={quest.progress}
-              max={quest.total}
-            />
-            <div className={styles.questProgressText}>
-              {quest.progress} / {quest.total}
-            </div>
+
+            <div className={styles.rewardIcon}>🎁</div>
           </div>
         ))}
       </div>
     </div>
   );
-};
+}
 
 export default DailyQuests;

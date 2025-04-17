@@ -3,74 +3,12 @@
   flex-direction: column;
   height: 100vh;
   width: 250px;
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   background-color: #f7fafc;
   border-right: 1px solid #ddd;
   transition: width 0.3s ease;
-}
-
-.collapsed {
-  width: 70px;
-  padding: 1rem 0.5rem;
-}
-
-.toggleContainer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.toggleSwitch {
-  position: relative;
-  display: inline-block;
-  width: 55px;
-  height: 28px;
-}
-
-.toggleSwitch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.4s;
-}
-
-.toggleSwitch input:checked + .slider {
-  background-color: #56C2D6;
-}
-
-.toggleSwitch input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-.toggleLabel {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #004b5a;
-  margin-left: 0.5rem;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -136,19 +74,47 @@
   color: #00748c;
 }
 
-/* Collapsed state tweaks */
-.collapsed .logo,
-.collapsed .toggleLabel,
-.collapsed .navItem span,
-.collapsed .dropdownContent {
-  display: none;
-}
+@media (max-width: 768px) {
+  .dashboardWrapper {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 60px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 999;
+    background-color: #0f172a;
+    border-top: 1px solid #334155;
+    padding: 0;
+  }
 
-.collapsed .navItem {
-  justify-content: center;
-  padding: 0.75rem 0.5rem;
-}
+  .logo {
+    display: none;
+  }
 
-.collapsed .icon {
-  font-size: 1.4rem;
+  .navMenu {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+  }
+
+  .navItem {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    padding: 0.3rem;
+    color: #e3eff4;
+  }
+
+  .navItem span {
+    display: none; /* hide labels in mobile view */
+  }
+
+  .dropdownContent {
+    display: none; /* disable dropdown on mobile */
+  }
 }

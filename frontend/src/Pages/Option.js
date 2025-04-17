@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import styles from "./Option.module.css";
 import { useNavigate } from "react-router-dom";
 import { useCourseStore } from "../Store/courseStore";
-import { getProfile, enrollInCourse } from "../utils/api";
+import { getProfile } from "../utils/api";
 
 import introImg from "../Image/intro.png";
 import frontendImg from "../Image/frontend.png";
 import backendImg from "../Image/backend.png";
 
+// Course options with backendId added explicitly
 const courseOptions = [
   {
     id: 1,
+    backendId: 1,
     key: "intro",
     name: "Introduction to Computer",
     image: introImg,
@@ -18,17 +20,19 @@ const courseOptions = [
   },
   {
     id: 2,
+    backendId: 2,
     key: "frontend",
     name: "Frontend Development",
     image: frontendImg,
-    path: "/frontend",
+    path: "/learn",
   },
   {
     id: 3,
+    backendId: 3,
     key: "backend",
     name: "Backend Development",
     image: backendImg,
-    path: "/backend",
+    path: "/learn",
   },
 ];
 
@@ -38,32 +42,29 @@ function Option() {
   const [enrolledCourseTitles, setEnrolledCourseTitles] = useState([]);
 
   useEffect(() => {
-    const fetchEnrolledCourses = async () => {
+    const fetchProfile = async () => {
       try {
-        const response = await getProfile();
-        const enrolled = response.data.courses.map((c) => c.title);
-        setEnrolledCourseTitles(enrolled);
+        const profile = await getProfile();
+        const enrolledTitles = profile.courses.map((course) =>
+          course.title.toLowerCase()
+        );
+        setEnrolledCourseTitles(enrolledTitles);
       } catch (error) {
-        console.error("❌ Failed to load profile courses", error);
+        console.error("❌ Failed to load profile courses:", error);
       }
     };
 
-    fetchEnrolledCourses();
+    fetchProfile();
   }, []);
 
-  const handleSelect = async (course) => {
-    try {
-      // Enroll in the course if not already enrolled
-      if (!enrolledCourseTitles.includes(course.name)) {
-        await enrollInCourse(course.id); // course.id must match the backend Course ID
-        setEnrolledCourseTitles((prev) => [...prev, course.name]);
-        console.log(`✅ Enrolled in ${course.name}`);
-      }
-
-      setSelectedCourse(course);
+  const handleSelect = (course) => {
+    setSelectedCourse(course);
+    navigate(course.path);
+    const isEnrolled = enrolledCourseTitles.includes(course.name.toLowerCase());
+    if (!isEnrolled) {
+      navigate(`/level-select?courseId=${course.backendId}&courseKey=${course.key}`);
+    } else {
       navigate(course.path);
-    } catch (error) {
-      console.error(`❌ Failed to enroll in ${course.name}`, error);
     }
   };
 
@@ -72,23 +73,26 @@ function Option() {
       <div className={styles.body}>
         <h1 className={styles.title}>Choose Your Course</h1>
         <div className={styles.cards}>
-          {courseOptions.map((course) => (
-            <div
-              key={course.key}
-              className={`${styles.card} ${
-                enrolledCourseTitles.includes(course.name) ? styles.enrolled : ""
-              }`}
-              onClick={() => handleSelect(course)}
-            >
-              <img src={course.image} alt={course.name} className={styles.image} />
-              <div className={styles.inner}>
-                <h3 className={styles.cardTitle}>{course.name}</h3>
-                {enrolledCourseTitles.includes(course.name) && (
-                  <p className={styles.status}>Enrolled</p>
-                )}
+          {courseOptions.map((course) => {
+            const isEnrolled = enrolledCourseTitles.includes(course.name.toLowerCase());
+            return (
+              <div
+                key={course.key}
+                className={`${styles.card} ${isEnrolled ? styles.enrolled : ""}`}
+                onClick={() => handleSelect(course)}
+              >
+                <img
+                  src={course.image}
+                  alt={course.name}
+                  className={styles.image}
+                />
+                <div className={styles.inner}>
+                  <h3 className={styles.cardTitle}>{course.name}</h3>
+                  {isEnrolled && <p className={styles.status}>Enrolled</p>}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -133,20 +133,24 @@
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
   margin-top: 20px;
+  justify-content: flex-start; /* optional: center, space-between, etc. */
 }
 
 .statBox {
   background-color: #d3e4eb;
-  padding: 16px;
+  padding: 16px 20px;
   border-radius: 10px;
   text-align: center;
   color: #111827;
   border: 1px solid #d1d5db;
   transition: transform 0.2s ease;
+  width: fit-content;
+  min-width: 200px; /* optional: set a sensible minimum */
+  box-sizing: border-box;
 }
 
 .statBox:hover {

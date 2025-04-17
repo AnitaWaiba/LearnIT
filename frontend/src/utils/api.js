@@ -36,6 +36,12 @@ export const getAllCourses = () => api.get('/courses/').then(res => res.data);
 export const enrollInCourse = (courseId) => api.post(`/courses/${courseId}/enroll/`);
 export const createCourse = (formData) => api.post('/courses/create/', formData);
 
+export const setUserCourseLevel = (courseId, level) =>
+  api.post('/set-course-level/', { course_id: courseId, level });
+
+export const getUserCourseLevel = (courseId) =>
+  api.get(`/get-course-level/${courseId}/`).then(res => res.data);
+
 //
 // ========== LESSONS ==========
 //
@@ -49,9 +55,8 @@ export const deleteLesson = (lessonId) => api.delete(`/lessons/${lessonId}/delet
 export const getLessonBlocks = (lessonId) =>
   api.get(`/lessons/${lessonId}/blocks/`).then(res => res.data);
 
-export const markLessonCompleted = (lessonId) => {
-  return axios.post(`/api/lessons/${lessonId}/complete/`);
-};
+export const markLessonCompleted = (lessonId) =>
+  api.post(`/lessons/${lessonId}/complete/`);
 
 export const getCompletedLessonsByCourse = (courseId) =>
   api.get(`/user/completed-lessons/${courseId}/`).then(res => res.data);
@@ -86,9 +91,26 @@ export const updateQuestionById = (questionId, data) =>
 export const deleteQuestionById = (questionId) =>
   api.delete(`/questions/${questionId}/delete/`);
 
+export const submitAnswer = (questionId, answer) =>
+  api.post(`/submit-answer/${questionId}/`, { answer }).then(res => res.data);
+
 //
 // ========== QUESTS ==========
 //
 export const getDailyQuests = () => api.get('/daily-quests/').then(res => res.data);
+export const getAllQuests = () => api.get('/admin/quests/').then(res => res.data);
+export const createQuest = (data) => api.post('/admin/quests/', data).then(res => res.data);
+export const deleteQuestById = (id) => api.delete(`/admin/quests/${id}/`).then(res => res.data);
+
+//
+// ========== STATUS BAR ==========
+//
+export const getStatusInfo = () => api.get('/status-info/').then(res => res.data);
+
+//
+// ========== LEADERBOARD =========
+//
+export const getLeaderboard = () =>
+  api.get('/leaderboard/').then(res => res.data);
 
 export default api;

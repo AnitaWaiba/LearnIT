@@ -7,16 +7,12 @@
   overflow: hidden;
 }
 
-/* Sidebar Left */
 .leftSidebar {
   grid-area: sidebar;
-  background-color: #f0f9ff;
-  border-right: 1px solid #dbeafe;
-  overflow-y: auto;
-  min-width: 250px;
+  background-color: #0f172a;
+  padding: 20px;
 }
 
-/* Main Center Panel */
 .centerContent {
   grid-area: center;
   overflow-y: auto;
@@ -26,7 +22,6 @@
   min-width: 0;
 }
 
-/* Sidebar Right */
 .rightSidebar {
   grid-area: right;
   background-color: #f9fafb;
@@ -46,15 +41,13 @@
   margin-bottom: 60px;
 }
 
-/* Section Header */
 .banner {
-  background-color: #56c2d6;
+  background-color: #3aa9bd;
   padding: 20px 30px;
   border-radius: 12px;
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;
-  text-align: left;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -64,7 +57,7 @@
   margin-top: 8px;
 }
 
-/* Lesson Path Wave Layout */
+/* Lesson Path */
 .lessonPath {
   display: flex;
   flex-direction: column;
@@ -90,7 +83,7 @@
 .lessonWrapper:nth-child(10n+9)  { transform: translateX(0px); }
 .lessonWrapper:nth-child(10n+10) { transform: translateX(20px); }
 
-/* Lesson Button Styling */
+/* Lesson Buttons */
 .lessonButton {
   width: 80px;
   height: 80px;
@@ -105,12 +98,10 @@
   justify-content: center;
   text-align: center;
   padding: 8px;
-  line-height: 1.2;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   white-space: pre-line;
 }
 
-/* Status Styles */
 .completed {
   background-color: #10b981;
   color: white;
@@ -127,7 +118,6 @@
   cursor: not-allowed;
 }
 
-/* Hover Effect */
 .unlocked:hover {
   background-color: #2563eb;
   transform: scale(1.05);
@@ -138,15 +128,66 @@
   font-weight: 700;
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  line-height: 1;
 }
 
 .lessonButton:hover .lessonNumber {
   transform: scale(1.1);
-  color: #fef9c3; /* soft yellow */
+  color: #fef9c3;
 }
 
-/* Responsive: Collapse sidebars */
+/* Heart Warning Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal h3 {
+  font-size: 22px;
+  color: #ef4444;
+  margin-bottom: 10px;
+}
+
+.modal p {
+  font-size: 15px;
+  color: #334155;
+  margin-bottom: 20px;
+}
+
+.closeBtn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background-color: #2563eb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
 @media (max-width: 1024px) {
   .learnGrid {
     grid-template-columns: 1fr;
@@ -168,4 +209,3 @@
     font-size: 12px;
   }
 }
-

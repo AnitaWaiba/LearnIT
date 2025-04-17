@@ -10,7 +10,9 @@ function ProfilePage() {
     username: '',
     joined: '',
     courses: [],
-    avatar: ''
+    avatar: '',
+    xp: 0,
+    current_streak: 0,
   });
 
   const [editingAvatar, setEditingAvatar] = useState(false);
@@ -36,7 +38,6 @@ function ProfilePage() {
     try {
       setUploading(true);
       setUploadMessage('');
-
       const res = await updateProfile(formData);
 
       if (res.avatar) {
@@ -58,11 +59,14 @@ function ProfilePage() {
 
   return (
     <div className={styles.gridLayout}>
+      {/* Sidebar */}
       <aside className={styles.sidebar}>
         <Dashboard />
       </aside>
 
+      {/* Main Content */}
       <main className={styles.mainContent}>
+        {/* Avatar Section */}
         <div className={styles.banner}>
           <img
             src={userData.avatar || defaultAvatar}
@@ -99,12 +103,11 @@ function ProfilePage() {
           </div>
         )}
 
+        {/* Profile Info */}
         <div className={styles.profileInfo}>
           <h1>{userData.name}</h1>
           <p className={styles.username}>@{userData.username}</p>
-          <p className={styles.joined}>
-            Joined <strong>{userData.joined}</strong>
-          </p>
+          <p className={styles.joined}>Joined <strong>{userData.joined}</strong></p>
 
           <div className={styles.courseIcons}>
             {userData.courses.map((course) =>
@@ -121,24 +124,17 @@ function ProfilePage() {
           </div>
         </div>
 
+        {/* Live Statistics */}
         <div className={styles.statistics}>
           <h2>Statistics</h2>
           <div className={styles.statsGrid}>
             <div className={styles.statBox}>
-              🔥<strong>302</strong>
-              <p>Day streak</p>
+              🔥<strong>{userData.current_streak ?? 0}</strong>
+              <p>Day Streak</p>
             </div>
             <div className={styles.statBox}>
-              ⚡<strong>54721</strong>
+              ⚡<strong>{userData.xp ?? 0}</strong>
               <p>Total XP</p>
-            </div>
-            <div className={styles.statBox}>
-              💎<strong>Emerald</strong>
-              <p>Current league</p>
-            </div>
-            <div className={styles.statBox}>
-              🏅<strong>5</strong>
-              <p>Top 3 finishes</p>
             </div>
           </div>
         </div>

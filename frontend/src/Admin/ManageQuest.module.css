@@ -1,0 +1,181 @@
+/* === Layout === */
+.grid {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.sidebar {
+  background-color: #e5f4fa;
+  padding: 20px;
+  border-right: 1px solid #d1d5db;
+}
+
+.main {
+  padding: 40px;
+  max-width: 900px;
+}
+
+h2 {
+  font-size: 24px;
+  color: #1e3a8a;
+  margin-bottom: 24px;
+}
+
+/* === Alert Message === */
+.alert {
+  background-color: #e0f2fe;
+  color: #075985;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* === Add Button === */
+.addBtn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+}
+
+.addBtn:hover {
+  background-color: #2563eb;
+}
+
+/* === Quest List === */
+.questList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.questItem {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  padding: 14px 18px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s ease;
+}
+
+.questItem:hover {
+  background-color: #f0f9ff;
+}
+
+.questText {
+  font-size: 16px;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* === Delete Button === */
+.deleteBtn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 32px;
+  height: 32px;
+}
+
+.deleteBtn:hover {
+  background-color: #dc2626;
+}
+
+/* === Modal Styles === */
+.modal {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 600px; /* 🔄 Increased from 500px */
+  width: 100%;
+  margin: auto;
+  position: relative;
+  top: 80px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+
+.overlay {
+  background: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* === Modal Form === */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalForm input,
+.modalForm select {
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+}
+
+/* === Modal Buttons === */
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.submitBtn {
+  background-color: #10b981;
+  color: white;
+  padding: 10px 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: #059669;
+}
+
+.cancelBtn {
+  background-color: #f1f5f9;
+  color: #334155;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background-color: #e2e8f0;
+}

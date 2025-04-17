@@ -1,120 +1,93 @@
-.gridLayout {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  grid-template-areas: "sidebar main";
-  min-height: 100vh;
-  background-color: #e3eff4;
-}
-
-/* Left Sidebar (if used externally) */
-.sidebar {
-  grid-area: sidebar;
-  color: white;
-  overflow-y: auto;
-}
-
-/* Right Main Content */
-.mainContent {
-  grid-area: main;
-  padding: 80px 80px 40px 30px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow-x: hidden;
-}
-
 .questContainer {
-  max-width: 600px;
-  width: 100%;
+  margin-top: 100px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  color: #1e293b;
+  max-width: 800px;
+  margin: 0 auto;
+  border: 1px solid #b3c5cc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
-.title {
-  font-size: 1.5rem;
+.heading {
+  font-size: 22px;
+  font-weight: 600;
   color: #004d61;
-  margin-bottom: 20px;
   text-align: center;
+  margin-bottom: 24px;
 }
 
 .questList {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
 }
 
 .questCard {
-  background: white;
-  border-radius: 10px;
+  background-color: #f9fafa;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-  border: 1.5px solid #cbd5e1;
-  font-size: 14px;
-}
-
-.questHeader {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease-in-out;
 }
 
-.icon {
-  font-size: 20px;
-  margin-right: 8px;
+.questCard:hover {
+  background-color: #f0f9ff;
+  transform: scale(1.01);
+}
+
+.iconCircle {
+  font-size: 22px;
+  background-color: #56c2d6;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.questDetails {
+  flex-grow: 1;
+  margin-right: 12px;
 }
 
 .questTitle {
+  font-size: 15px;
   font-weight: 600;
-  font-size: 0.95rem;
   color: #004d61;
+  margin-bottom: 6px;
 }
 
-.progressBar {
-  width: 100%;
-  height: 10px;
+.progressBarWrapper {
+  height: 8px;
+  background-color: #dbeafe;
   border-radius: 6px;
-  background: #f0f0f0;
-  appearance: none;
+  overflow: hidden;
+  margin-bottom: 6px;
 }
 
-.progressBar::-webkit-progress-bar {
-  background-color: #f0f0f0;
-  border-radius: 6px;
+.progressFill {
+  height: 100%;
+  background-color: #3aa9bd;
+  transition: width 0.3s ease;
 }
 
-.progressBar::-webkit-progress-value {
-  background-color: #60a5fa;
-  border-radius: 6px;
-}
-
-.questProgressText {
+.progressText {
   font-size: 12px;
-  text-align: right;
-  color: #1e293b;
-  margin-top: 6px;
+  color: #334155;
 }
 
-/* Optional Tip */
-.tip {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .gridLayout {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "sidebar"
-      "main";
-  }
-
-  .mainContent {
-    padding: 20px 15px;
-  }
-
-  .questContainer {
-    padding: 0 10px;
-  }
+.rewardIcon {
+  font-size: 22px;
+  color: #f59e0b;
+  margin-left: 12px;
 }

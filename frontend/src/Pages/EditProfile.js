@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import styles from './EditProfile.module.css';
 import defaultAvatar from '../Image/avatar1.png';
-import axios from 'axios';
+import { getProfile, updateProfile } from '../utils/api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getProfile, updateProfile } from '../utils/api';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function EditProfile() {
-  const [userData, setUserData] = useState({
-    name: '',
-    username: '',
-    joined: '',
-    courses: [],
-    avatar: ''
-  });
-
+  const [userData, setUserData] = useState(null);
   const [newUsername, setNewUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -24,55 +16,48 @@ function EditProfile() {
   const [editingAvatar, setEditingAvatar] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  // Load profile
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadProfile = async () => {
       try {
-        const response = await getProfile();
-        setUserData(response.data);
-        setNewUsername(response.data.username);
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
+        const profile = await getProfile();
+        setUserData(profile);
+        setNewUsername(profile.username);
+      } catch (err) {
+        console.error('❌ Failed to load profile:', err);
+        toast.error('Failed to load profile.');
       }
     };
-    fetchProfile();
+    loadProfile();
   }, []);
 
-  const handleAvatarSelect = async (file) => {
+  const handleAvatarUpload = async (file) => {
     const formData = new FormData();
     formData.append('avatar', file);
     try {
       setUploading(true);
-      const response = await updateProfile(formData);
+      const res = await updateProfile(formData);
       setUserData((prev) => ({
         ...prev,
-        avatar: response.data.avatar,
+        avatar: res.avatar,
       }));
       toast.success('✅ Avatar updated!');
-    } catch (error) {
-      toast.error('❌ Avatar upload failed.');
+    } catch (err) {
+      toast.error('❌ Failed to update avatar.');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleCredentialSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.put(
-        'http://localhost:8000/api/profile/update/',
-        {
-          username: newUsername,
-          current_password: currentPassword,
-          new_password: newPassword
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      toast.success('✅ Profile updated successfully!');
+      await updateProfile({
+        username: newUsername,
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      toast.success('✅ Profile updated!');
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
@@ -81,10 +66,13 @@ function EditProfile() {
     }
   };
 
+  if (!userData) return <div className={styles.loading}>Loading...</div>;
+
   return (
     <div className={styles.container}>
       <ToastContainer position="top-center" autoClose={2500} />
 
+      {/* Avatar Section */}
       <div className={styles.avatarContainer}>
         <img
           src={userData.avatar || defaultAvatar}
@@ -106,25 +94,23 @@ function EditProfile() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  handleAvatarSelect(e.target.files[0]);
-                }
-              }}
+              onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
               className={styles.hiddenInput}
             />
           </label>
-          {uploading && <div className={styles.spinner}>Uploading...</div>}
+          {uploading && <p className={styles.spinner}>Uploading...</p>}
         </div>
       )}
 
+      {/* Profile Info */}
       <div className={styles.profileInfo}>
         <h1>{userData.name}</h1>
         <p className={styles.username}>@{userData.username}</p>
         <p className={styles.joined}>Joined <strong>{userData.joined}</strong></p>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      {/* Edit Credentials */}
+      <form onSubmit={handleCredentialSubmit} className={styles.form}>
         <h2>Edit Credentials</h2>
 
         <label>
@@ -146,7 +132,10 @@ function EditProfile() {
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
             />
-            <span onClick={() => setShowCurrent(!showCurrent)} className={styles.toggleIcon}>
+            <span
+              onClick={() => setShowCurrent(!showCurrent)}
+              className={styles.toggleIcon}
+            >
               {showCurrent ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
@@ -161,13 +150,16 @@ function EditProfile() {
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
-            <span onClick={() => setShowNew(!showNew)} className={styles.toggleIcon}>
+            <span
+              onClick={() => setShowNew(!showNew)}
+              className={styles.toggleIcon}
+            >
               {showNew ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
         </label>
 
-        <button type="submit">Save Changes</button>
+        <button type="submit" className={styles.submitBtn}>Save Changes</button>
       </form>
     </div>
   );
