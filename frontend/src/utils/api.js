@@ -113,4 +113,11 @@ export const getStatusInfo = () => api.get('/status-info/').then(res => res.data
 export const getLeaderboard = () =>
   api.get('/leaderboard/').then(res => res.data);
 
+//
+// ========== NOTIFICATION ==========
+//
+export const getNotifications = () =>
+  axiosInstance.get('/notifications/').then(res => res.data);
+export const markNotificationRead = (id) => axiosInstance.post(`/notifications/${id}/read/`);
+
 export default api;

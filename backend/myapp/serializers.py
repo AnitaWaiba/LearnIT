@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
-from .models import UserProfile, Course, Lesson, Question, Option, LessonBlock, UserLessonProgress, CourseLevel, DailyQuest, UserDailyQuest
+from .models import UserProfile, Course, Lesson, Question, Option, LessonBlock, UserLessonProgress, CourseLevel, DailyQuest, UserDailyQuest, Notification
 
 # ==========================
 # 🔐 User Serializer
@@ -187,3 +187,11 @@ class UserDailyQuestSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDailyQuest
         fields = ['id', 'quest', 'progress', 'completed', 'date_assigned']
+
+# ==========================
+# Notification
+# ==========================
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'is_read', 'timestamp']

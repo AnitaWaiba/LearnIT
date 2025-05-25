@@ -3,6 +3,26 @@ import styles from "./AdminDashboard.module.css";
 import AdminSidebar from "./AdminSidebar";
 import { getAdminDashboard } from "../utils/api";
 
+import {
+  Chart as ChartJS,
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar, Pie } from "react-chartjs-2";
+
+ChartJS.register(
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
+
 const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
 
@@ -19,8 +39,41 @@ const AdminDashboard = () => {
   }, []);
 
   if (!dashboardData) {
-    return <p style={{ padding: '40px' }}>Loading dashboard...</p>;
+    return <p style={{ padding: "40px" }}>Loading dashboard...</p>;
   }
+
+  const barData = {
+    labels: ["Users", "Courses", "Enrollments"],
+    datasets: [
+      {
+        label: "Count",
+        data: [
+          dashboardData.totalUsers,
+          dashboardData.totalCourses,
+          dashboardData.totalEnrollments,
+        ],
+        backgroundColor: ["#3B82F6", "#10B981", "#F59E0B"],
+        borderRadius: 5,
+      },
+    ],
+  };
+
+  const pieData = {
+    labels: dashboardData.courseStats?.labels || [],
+    datasets: [
+      {
+        data: dashboardData.courseStats?.counts || [],
+        backgroundColor: [
+          "#60A5FA",
+          "#34D399",
+          "#FBBF24",
+          "#A78BFA",
+          "#F87171",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
 
   return (
     <div className={styles.gridLayout}>
@@ -29,7 +82,10 @@ const AdminDashboard = () => {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.cardGrid}>
+        <h2 className={styles.pageTitle}>📊 Admin Dashboard</h2>
+
+        {/* Top Stats Row */}
+        <div className={styles.cardGridRow}>
           <div className={styles.card}>
             <h4>Total Users</h4>
             <p>{dashboardData.totalUsers}</p>
@@ -48,32 +104,40 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className={styles.section}>
-          <h2>📋 Activity Logs</h2>
-          {dashboardData.activityLogs.length === 0 ? (
-            <p>No activity logs found.</p>
-          ) : (
-            dashboardData.activityLogs.map((log, idx) => (
-              <div key={idx} className={styles.logItem}>
-                <span>{log.date}</span>
-                <span>{log.action}</span>
-                <span>{log.user}</span>
-              </div>
-            ))
-          )}
-        </div>
+        {/* Chart Row */}
+        <div className={styles.chartRow}>
+          <div className={styles.chartContainer}>
+            <h3>System Overview</h3>
+            <Bar
+              data={barData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } },
+              }}
+              height={300}
+            />
+          </div>
 
-        <div className={styles.section}>
-          <h2>📝 Latest Reviews</h2>
-          {dashboardData.latestReviews.length === 0 ? (
-            <p>No reviews yet.</p>
-          ) : (
-            dashboardData.latestReviews.map((r, i) => (
-              <div key={i} className={styles.reviewItem}>
-                <strong>⭐ {r.rating}</strong>
-                <p>{r.comment}</p>
-              </div>
-            ))
+          {dashboardData.courseStats?.counts?.length > 0 && (
+            <div className={styles.chartContainer}>
+              <h3>Enrollments by Course</h3>
+              <Pie
+                data={pieData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: { boxWidth: 16 },
+                    },
+                  },
+                }}
+                height={300}
+              />
+            </div>
           )}
         </div>
       </div>

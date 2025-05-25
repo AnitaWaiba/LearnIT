@@ -63,6 +63,17 @@
   color: #0077b6;
 }
 
+.redDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+
 /* Toggle button for mobile */
 .toggleButton {
   display: none;

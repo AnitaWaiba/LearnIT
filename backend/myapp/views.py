@@ -14,66 +14,195 @@ import random
 from datetime import date, timedelta
 from django.utils import timezone
 from django.utils.html import escape
+from .tokens import email_verification_token
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
 
 from .models import (UserProfile, Course, Lesson, Question, Option, Enrollment, Review, 
-                     LessonBlock, UserLessonProgress, CourseLevel, DailyQuest, UserDailyQuest)
+                     LessonBlock, UserLessonProgress, CourseLevel, DailyQuest, UserDailyQuest, Notification)
 from .serializers import (
     UserSerializer, CourseSerializer, LessonSerializer,
-    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer, LessonBlockSerializer, DailyQuestSerializer, UserDailyQuestSerializer
+    CourseDetailSerializer, LessonDetailSerializer, QuestionSerializer, LessonBlockSerializer, DailyQuestSerializer, UserDailyQuestSerializer,
+    NotificationSerializer,
 )
 
 # ---------------- AUTH ----------------
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         username = request.data.get("username")
         email = request.data.get("email")
         password = request.data.get("password")
         confirm_password = request.data.get("confirmPassword")
 
+        # ✅ Validate input fields
         if not all([username, email, password, confirm_password]):
             return Response({"error": "All fields are required."}, status=400)
+
         if password != confirm_password:
             return Response({"error": "Passwords do not match."}, status=400)
+
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already exists."}, status=400)
+
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already exists."}, status=400)
 
-        # 🔐 Password strength rule
+        # ✅ Enforce strong password policy
         password_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
         if not re.match(password_regex, password):
             return Response({
                 "error": "Password must be at least 8 characters long and include letters, numbers, and special characters."
             }, status=400)
-        
+
+        # ✅ Create user and profile
         user = User.objects.create(
             username=username,
             email=email,
             password=make_password(password)
         )
-        return Response({"message": "User created successfully."}, status=201)
+
+        # ✅ Send verification email
+        send_verification_email(request, user)
+
+        return Response({"message": "User created. Check email for verification."}, status=201)
+    
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomLoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         identifier = request.data.get("username")
         password = request.data.get("password")
+
         if not identifier or not password:
             return Response({"error": "Username and password are required."}, status=400)
+
         user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
-        if user and check_password(password, user.password):
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "message": "Login successful."
-            }, status=200)
-        return Response({"error": "Invalid credentials."}, status=401)
+
+        if not user or not check_password(password, user.password):
+            return Response({"error": "Invalid credentials."}, status=401)
+
+        try:
+            profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "Profile not found. Please contact support."}, status=500)
+
+        if not profile.is_verified:
+            return Response({"error": "Email not verified. Please check your inbox or resend the verification email."}, status=403)
+
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "message": "Login successful."
+        }, status=200)
+    
+
+def send_verification_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    verify_url = request.build_absolute_uri(reverse('verify-email', args=[uid, token]))
+    try:
+        send_mail(
+            'Verify Your LearnIT Account',
+            f'Hi {user.username},\n\nClick the link to verify your account:\n{verify_url}\n\nThanks!',
+            'no-reply@learnit.com',
+            [user.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"Failed to send verification email: {e}")
+        # Optionally log error or notify admins
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()  # This can throw error
+        user = User.objects.get(pk=uid)
+    except Exception:
+        return Response({"error": "Invalid verification link"}, status=400)
+
+    if default_token_generator.check_token(user, token):
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.is_verified = True
+        profile.save()
+        return Response({"message": "✅ Email verified successfully!"})
+    else:
+        return Response({"error": "Verification link expired or invalid."}, status=400)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_verification(request):
+    email = request.data.get("email")
+    if not email:
+        return Response({"error": "Email is required"}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+        profile = UserProfile.objects.get(user=user)
+        if profile.is_verified:
+            return Response({"message": "Account already verified"}, status=200)
+
+        send_verification_email(request, user)
+        return Response({"message": "Verification email resent."})
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    email = request.data.get("email")
+    if not email:
+        return Response({"error": "Email is required"}, status=400)
+    try:
+        user = User.objects.get(email=email)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        frontend_base_url = "http://localhost:3000"  # or your production frontend domain
+        reset_url = f"{frontend_base_url}/reset-password/{uid}/{token}/"
+        send_mail(
+            'Reset Your LearnIT Password',
+            f'Click to reset your password: {reset_url}',
+            'no-reply@learnit.com',
+            [user.email],
+            fail_silently=False,
+        )
+        return Response({"message": "Password reset email sent."})
+    except User.DoesNotExist:
+        return Response({"error": "User with that email not found"}, status=404)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except Exception:
+        return Response({"error": "Invalid reset link"}, status=400)
+
+    if not default_token_generator.check_token(user, token):
+        return Response({"error": "Invalid or expired token"}, status=400)
+
+    password = request.data.get("password")
+    if not password:
+        return Response({"error": "Password is required"}, status=400)
+
+    user.set_password(password)
+    user.save()
+    return Response({"message": "Password reset successful!"})
+
+    
 # ---------------- PROFILE ----------------
 def get_day_suffix(day):
     if 11 <= day <= 13:
@@ -462,6 +591,8 @@ def mark_lesson_completed(request, lesson_id):
         profile.hearts = 5
         profile.last_heart_refill = now
 
+    create_notification(user, "❤️ Your hearts have been refilled. Keep learning!")
+
     quests = UserDailyQuest.objects.filter(user=user, date_assigned=today, completed=False)
 
     for q in quests:
@@ -475,6 +606,8 @@ def mark_lesson_completed(request, lesson_id):
         q.save()
 
     profile.save()
+    update_leaderboard_and_notify()
+
 
     return Response({
         "message": "Lesson completed 🎉",
@@ -550,6 +683,8 @@ def submit_answer(request, question_id):
             return Response({"error": "Out of hearts"}, status=400)
 
     profile.save()
+    update_leaderboard_and_notify()
+
 
     return Response({
         "correct": correct,
@@ -593,7 +728,10 @@ def enroll_in_course(request, course_id):
     user = request.user
     try:
         course = Course.objects.get(id=course_id)
-        Enrollment.objects.get_or_create(user=user, course=course)
+        enrollment, created = Enrollment.objects.get_or_create(user=user, course=course)
+
+        if created:
+            create_notification(user, f"🎉 You have successfully enrolled in the course: {course.title}")
 
         level_entry = CourseLevel.objects.filter(user=user, course=course).first()
         return Response({
@@ -609,14 +747,31 @@ def enroll_in_course(request, course_id):
 def admin_dashboard(request):
     if not request.user.is_staff:
         return Response({"error": "Admin access only."}, status=403)
+
+    # 📊 Course-wise Enrollment Count for Pie Chart
+    course_labels = []
+    course_counts = []
+    all_courses = Course.objects.all()
+    for course in all_courses:
+        course_labels.append(course.title)
+        course_counts.append(Enrollment.objects.filter(course=course).count())
+
     data = {
         "totalUsers": User.objects.count(),
-        "totalCourses": Course.objects.count(),
+        "totalCourses": all_courses.count(),
         "totalEnrollments": Enrollment.objects.count(),
-        "completionRate": 85,
-        "activityLogs": [{"date": "2024-03-01", "action": "User signed up", "user": "JohnDoe"}],
-        "latestReviews": Review.objects.values("rating", "comment")[:5]
+        "completionRate": 85,  # Optionally calculate real completion rate
+        "courseStats": {
+            "labels": course_labels,
+            "counts": course_counts,
+        },
+        "activityLogs": [
+            {"date": "2024-03-01", "action": "User signed up", "user": "JohnDoe"},
+            {"date": "2024-03-04", "action": "Enrolled in Course", "user": "JaneSmith"},
+        ],
+        "latestReviews": list(Review.objects.values("rating", "comment").order_by("-id")[:5])
     }
+
     return Response(data)
 
 # ------------------ USER: GET DAILY QUESTS ------------------
@@ -716,6 +871,31 @@ def get_leaderboard(request):
 
     return Response(result)
 
+def update_leaderboard_and_notify():
+    print("📊 Running leaderboard update...")
+
+    profiles = list(UserProfile.objects.select_related('user').order_by('-total_xp'))
+    
+    for idx, profile in enumerate(profiles):
+        current_rank = idx + 1
+        previous_rank = profile.last_rank
+
+        print(f"🔍 Checking user {profile.user.username}: current={current_rank}, previous={previous_rank}")
+
+        # Notify only if rank changed
+        if previous_rank is not None:
+            if current_rank < previous_rank:
+                print(f"📢 {profile.user.username} climbed to {current_rank}")
+                create_notification(profile.user, f"⬆️ You've climbed to Rank {current_rank} on the leaderboard!")
+            elif current_rank > previous_rank:
+                print(f"📉 {profile.user.username} dropped to {current_rank}")
+                create_notification(profile.user, f"⬇️ You've dropped to Rank {current_rank} on the leaderboard.")
+
+        # Update stored rank
+        profile.last_rank = current_rank
+        profile.save()
+
+
 # ---------------- USER MANAGEMENT ----------------
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -807,3 +987,24 @@ def delete_question_by_id(request, question_id):
     except Question.DoesNotExist:
         return Response({"error": "Question not found"}, status=404)
 
+def create_notification(user, message):
+    print(f"✅ Creating notification for {user.username}: {message}")
+    Notification.objects.create(user=user, message=message)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    serializer = NotificationSerializer(notifications, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return Response({"message": "Notification marked as read."})
+    except Notification.DoesNotExist:
+        return Response({"error": "Notification not found."}, status=404)

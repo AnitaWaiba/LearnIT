@@ -153,6 +153,9 @@ class UserProfile(models.Model):
     last_completed_date = models.DateField(null=True, blank=True)
     total_xp = models.IntegerField(default=0)
 
+    is_verified = models.BooleanField(default=False)
+
+    last_rank = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} Profile"
@@ -217,3 +220,15 @@ class UserDailyQuest(models.Model):
 
     class Meta:
         unique_together = ('user', 'quest', 'date_assigned')
+
+# ===========================================
+# ✅ NOTIFICATION MODEL
+# ===========================================
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message}"

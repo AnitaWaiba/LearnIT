@@ -23,7 +23,7 @@ function LearnPage() {
   const location = useLocation();
 
   const selectedCourse = useCourseStore((s) => s.selectedCourse);
-  const updateProfile = useProfileStore((s) => s.updateProfile);
+  const setFromProfile = useProfileStore((s) => s.setFromProfile);
   const hearts = useProfileStore((s) => s.hearts);
 
   const [lessons, setLessons] = useState([]);
@@ -53,11 +53,11 @@ function LearnPage() {
   const refreshProfile = useCallback(async () => {
     try {
       const data = await getProfile();
-      updateProfile(data);
+      setFromProfile(data);
     } catch (err) {
       console.error('❌ Failed to refresh profile:', err);
     }
-  }, [updateProfile]);
+  }, [setFromProfile]);
 
   useEffect(() => {
     fetchLessonsAndProgress();

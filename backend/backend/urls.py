@@ -5,7 +5,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from myapp import views
-from myapp.views import mark_lesson_completed, get_daily_quests, ListQuestView, DeleteQuestView, UpdateQuestView, submit_answer, get_leaderboard
+from myapp.views import (
+    mark_lesson_completed, get_daily_quests, ListQuestView, DeleteQuestView, UpdateQuestView,
+    submit_answer, get_leaderboard,
+    verify_email, resend_verification, get_notifications, mark_notification_read,
+    reset_password, forgot_password,  # <-- added these two
+)
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -23,6 +28,10 @@ urlpatterns = [
     # 🔐 Auth
     path('api/signup/', views.SignupView.as_view(), name='signup'),
     path('api/login/', views.CustomLoginView.as_view(), name='login'),
+
+    # Email verification URLs
+    path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify-email'),
+    path('resend-verification/', views.resend_verification, name='resend_verification'),
 
     # 🔑 JWT
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -46,7 +55,6 @@ urlpatterns = [
     path('api/lesson/<int:lesson_id>/complete/', views.mark_lesson_completed),
     path('api/user/completed-lessons/<int:course_id>/', views.get_completed_lessons),
 
-    
     # LessonBlock CRUD
     path('api/lessons/<int:lesson_id>/add-block/', views.add_paragraph_to_lesson, name='add_paragraph_to_lesson'),
     path('api/blocks/<int:block_id>/update/', views.update_paragraph_by_id, name='update_paragraph_by_id'),
@@ -70,13 +78,17 @@ urlpatterns = [
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 
-    #daily quest
+    # daily quest
     path('daily-quests/', get_daily_quests),
     path('admin/quests/', ListQuestView.as_view()),
     path('admin/quests/<int:quest_id>/delete/', DeleteQuestView.as_view()),
     path('admin/quests/<int:quest_id>/update/', UpdateQuestView.as_view()),
     path('submit-answer/<int:question_id>/', submit_answer, name='submit-answer'),
     path('leaderboard/', get_leaderboard, name='get_leaderboard'),
+    path('api/notifications/', get_notifications, name='notifications'),
+    path('api/notifications/<int:notification_id>/read/', mark_notification_read, name='mark_notification_read'),
+    path('api/forgot-password/', forgot_password, name='forgot-password'),
+    path('api/reset-password/<uidb64>/<token>/', reset_password, name='reset-password'),
 ]
 
 # ✅ Serve media files

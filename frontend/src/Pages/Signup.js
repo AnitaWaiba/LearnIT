@@ -22,7 +22,7 @@ function Signup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -40,8 +40,8 @@ function Signup() {
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
       await signupUser({
         username: formData.username,
         email: formData.email,
@@ -49,21 +49,43 @@ function Signup() {
         confirmPassword: formData.confirmPassword
       });
 
-      toast.success('Signup successful! Redirecting...');
+      toast.success(
+        'Signup successful! Please check your email to verify your account. Redirecting to login...'
+      );
       setTimeout(() => {
         navigate('/login');
-      }, 2500);
+      }, 4000);
     } catch (error) {
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
+      console.error('Signup error:', error);
+
+      // More detailed error parsing
+      if (error.response) {
+        const data = error.response.data;
+        if (data.error) {
+          toast.error(data.error);
+        } else if (typeof data === 'object') {
+          // If backend sends validation errors in dict form
+          const messages = [];
+          for (const key in data) {
+            if (Array.isArray(data[key])) {
+              messages.push(`${key}: ${data[key].join(', ')}`);
+            } else {
+              messages.push(`${key}: ${data[key]}`);
+            }
+          }
+          toast.error(messages.join(' | '));
+        } else {
+          toast.error('Signup failed with server error.');
+        }
+      } else if (error.request) {
+        toast.error('No response from server. Check your internet connection.');
       } else {
-        toast.error('Signup failed. Please try again.');
+        toast.error('Unexpected error occurred.');
       }
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className={styles.signupPage}>

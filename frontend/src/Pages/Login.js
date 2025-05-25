@@ -10,9 +10,12 @@ function Login() {
   const [formData, setFormData] = useState({ username: '', password: '', role: 'user' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resending, setResending] = useState(false);
+
   const navigate = useNavigate();
 
-  // 🔒 Clear tokens if user visits login (ensures fresh session)
+  // Clear tokens on load for clean session
   useEffect(() => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -25,6 +28,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setEmailNotVerified(false);
 
     try {
       const response = await api.post('/login/', {
@@ -51,10 +55,29 @@ function Login() {
         toast.error('Unexpected server response. Please try again.');
       }
     } catch (error) {
+      const status = error?.response?.status;
       const errorMsg = error?.response?.data?.error || 'Invalid credentials';
-      toast.error(errorMsg);
+
+      if (status === 403 && errorMsg.toLowerCase().includes('not verified')) {
+        setEmailNotVerified(true);
+        toast.warn('Email not verified. Please verify your email.');
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await api.post('/resend-verification/', { email: formData.username });
+      toast.success('Verification email resent! Check your inbox.');
+    } catch (err) {
+      toast.error('Failed to resend verification email.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -64,7 +87,7 @@ function Login() {
       <div className={styles.loginContainer}>
         <h1 className={styles.loginTitle}>Login</h1>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">Username or Email</label>
           <input
             id="username"
             type="text"
@@ -105,6 +128,20 @@ function Login() {
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
+
+          {emailNotVerified && (
+            <div className={styles.verificationNotice}>
+              <p>Your email is not verified. Please check your inbox or resend the verification email.</p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resending}
+                className={styles.resendBtn}
+              >
+                {resending ? 'Resending...' : 'Resend Verification Email'}
+              </button>
+            </div>
+          )}
 
           <div className={styles.forgotPassword}>
             <a href="/forgot-password">Forgot Password?</a>

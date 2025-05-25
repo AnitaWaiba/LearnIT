@@ -1,16 +1,10 @@
 from pathlib import Path
 from datetime import timedelta
-
-# ==============================================================================
-# 🔐 Base Project Setup
-# ==============================================================================
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = 'django-insecure-m&7454wb6*tg3c3-ff7zn1!e=1ky$@nfz4gje^^b25neo-4&x#'
-
+SECRET_KEY = 'your-secret-key'
 DEBUG = True
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # ==============================================================================
@@ -24,21 +18,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # Required by allauth
+    'django.contrib.sites',
 
     # Third-party
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
-
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
-    # Custom app
+    # Your app
     'myapp',
 ]
 
@@ -49,11 +41,11 @@ SITE_ID = 1
 # ==============================================================================
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS support
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # required for allauth
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -74,7 +66,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # Required for allauth
+                'django.template.context_processors.request',  # required by allauth
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -106,12 +98,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-]
-
 # ==============================================================================
-# 🌐 Internationalization
+# 🌍 Internationalization
 # ==============================================================================
 
 LANGUAGE_CODE = 'en-us'
@@ -120,30 +108,25 @@ USE_I18N = True
 USE_TZ = True
 
 # ==============================================================================
-# 🧱 Static Files
+# 🧱 Static + Media Files
 # ==============================================================================
 
 STATIC_URL = 'static/'
 
-# ==============================================================================
-# 🔑 Primary Key Field Type
-# ==============================================================================
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # ==============================================================================
-# 🌍 CORS Configuration (Frontend support)
+# 🌐 CORS Settings (Frontend Integration)
 # ==============================================================================
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
-
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
-
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 
 # ==============================================================================
 # 🛡 Django REST Framework + JWT
@@ -156,39 +139,40 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',  # ✅ Open by default
+        'rest_framework.permissions.AllowAny',
     ),
 }
-
-# ==============================================================================
-# 🔐 JWT Configuration
-# ==============================================================================
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-REST_USE_JWT = True  # Enable JWT support for dj-rest-auth
+REST_USE_JWT = True
 
 # ==============================================================================
-# 📧 Allauth Configuration
+# 📧 Gmail SMTP Email Configuration
 # ==============================================================================
 
-ACCOUNT_LOGIN_METHODS = {'username'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Set to 'mandatory' if using email confirmation
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'precision8703@gmail.com'
+EMAIL_HOST_PASSWORD = 'hikonsjrlrkdyavr'
+DEFAULT_FROM_EMAIL = 'LearnIT <precision8703@gmail.com>'
+
 
 # ==============================================================================
-# 🧪 Email Backend (for dev only)
+# 🧪 Allauth Email Verification Settings
 # ==============================================================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # force user to verify email
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True  # allow confirmation via link click
 
-# ==============================================================================
-# 🖼 MEDIA FILES (User Avatars, Lesson Icons, etc.)
-# ==============================================================================
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Prevent auto login before verification (optional)
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+ACCOUNT_LOGIN_ON_SIGNUP = False
